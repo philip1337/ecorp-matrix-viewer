@@ -1,5 +1,6 @@
+include 'src:common'
+findProject(':src:common')?.name = 'common'
 include 'src:master'
 findProject(':src:master')?.name = 'master'
 include 'src:node'
 findProject(':src:node')?.name = 'node'
-
