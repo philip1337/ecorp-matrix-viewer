@@ -1,41 +1,75 @@
 package app;
 
 
+import service.BroadcastService;
+import service.MasterDiscoveryService;
+import types.Broadcast;
+import util.ServiceManager;
+
 import java.net.*;
+import java.nio.ByteBuffer;
 import java.util.*;
 
 public class Main {
-    private static final int RANDOM_PORT = 4444;
+    /**
+     * Services
+     */
+    private ServiceManager services_ = null;
 
+    /**
+     * Broadcast
+     */
+    private BroadcastService broadcast_ = null;
+
+    /**
+     * Master discovery
+     */
+    private MasterDiscoveryService discovery_ = null;
+
+    /**
+     * Entry point
+     * @param args commandline
+     */
     public static void main( String[] args )
-            throws Exception
     {
-        InetAddress addr = getBroadcastAddrs().get(0);
-        if (addr == null)
-            return;
-        DatagramSocket dsock = new DatagramSocket();
-        dsock.setBroadcast(true);
-        byte[] send = "Hello World".getBytes( "UTF-8" );
-        DatagramPacket data = new DatagramPacket( send, send.length, addr, 59685 );
-        dsock.send( data );
+        try {
+            new Main().Run();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
-    public static List<InetAddress> getBroadcastAddrs() throws SocketException {
-        Set<InetAddress> set = new LinkedHashSet<>();
-        Enumeration<NetworkInterface> nicList = NetworkInterface.
-                getNetworkInterfaces();
-        for( ; nicList.hasMoreElements(); ) {
-            NetworkInterface nic = nicList.nextElement();
-            if( nic.isUp() && !nic.isLoopback() )  {
-                for( InterfaceAddress ia : nic.getInterfaceAddresses() ) {
-                    if (ia.getBroadcast() == null)
-                        continue;
-                    set.add(ia.getBroadcast());
-                    System.out.printf("broadcast: %s\n", ia.getBroadcast());
-                }
-            }
-        }
-        return Arrays.asList( set.toArray( new InetAddress[0] ) );
+    /**
+     * Register services
+     * @throws SocketException
+     */
+    private void RegisterServices() throws SocketException {
+        // Register broadcast channel
+        broadcast_ = new BroadcastService(59607);
+        discovery_ = new MasterDiscoveryService(broadcast_);
 
+        // Set discovery service
+        broadcast_.SetDiscoveryService(discovery_);
+
+        // Register to main service handler
+        services_.Register(broadcast_);
+        services_.Register(discovery_);
+    }
+
+    /**
+     * Run
+     */
+    public void Run() throws InterruptedException {
+        try {
+            RegisterServices();
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+
+        // Register threaded services
+        services_.Start();
+
+        // Wait handler
+        services_.Wait();
     }
 }

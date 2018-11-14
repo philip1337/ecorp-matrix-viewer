@@ -1,12 +1,12 @@
 package app;
 
-import net.BroadcastSocket;
+import service.BroadcastService;
+import java.net.SocketException;
 
 public class Main {
-    public static void main(String[] args) throws InterruptedException {
-        BroadcastSocket test = new BroadcastSocket();
-        test.run();
-        test.join();
-        System.out.println("Test");
+    public static void main(String[] args) throws InterruptedException, SocketException {
+        //BroadcastService s = new BroadcastService(59608);
+        //s.Start();
+        //s.join();
     }
 }

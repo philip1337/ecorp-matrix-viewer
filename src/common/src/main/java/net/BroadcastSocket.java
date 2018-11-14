@@ -4,6 +4,7 @@ import util.Thread;
 
 import java.io.IOException;
 import java.net.*;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 public class BroadcastSocket extends Thread {
@@ -20,14 +21,15 @@ public class BroadcastSocket extends Thread {
     /**
      * Port
      */
-    private int port_ = 0;
+    protected int port_ = 0;
 
     /**
      * Constructor
      * @param port
      */
-    public BroadcastSocket(int port) {
+    public BroadcastSocket(int port) throws SocketException {
         port_ = port;
+        InitializeSocket();
     }
 
     /**
@@ -39,14 +41,23 @@ public class BroadcastSocket extends Thread {
         socket_ = new DatagramSocket(port_);
     }
 
-    public void HandlePacket(byte header, byte[] data) {
-
+    public DatagramSocket GetSocket() {
+        assert(socket_ != null);
+        return socket_;
     }
 
     /**
-     * Thread handler
+     * Packet handler
+     * @param header byte
+     * @param data buffer
+     * @param address remote
      */
-    public void Run() {
+    public void HandlePacket(byte header, ByteBuffer data, InetAddress address) {}
+
+    /**
+     * Thread handler (run method)
+     */
+    public void run() {
         try {
             while (true) {
                 // Read packet
@@ -55,26 +66,26 @@ public class BroadcastSocket extends Thread {
 
                 // Invalid packet size
                 int length = packet.getLength();
-                if (length > 256 || length <= 0)
+                if (length > 256 || length <= 0) {
                     continue;
+                }
 
-                byte[] buffer = new byte[packet.getLength()];
-                buffer = packet.getData();
+                // Header
+                byte header = packet.getData()[0];
 
-                // Read header
-                byte header = buffer[0];
+                // Get content
+                ByteBuffer buffer = ByteBuffer.allocate(packet.getLength() - 1);
+                buffer.put(Arrays.copyOfRange(packet.getData(), 1, packet.getLength()));
+                buffer.flip();
 
                 // Handle packet
-                HandlePacket(buffer[0], Arrays.copyOfRange(buffer,
-                                                     packet.getLength() + 1,
-                                                           packet.getLength()));
+                HandlePacket(header, buffer, packet.getAddress());
             }
 
         } catch (IOException e) {
             // TODO: Error handler
             e.printStackTrace();
         }
-        System.out.println("socket");
     }
 }
 
