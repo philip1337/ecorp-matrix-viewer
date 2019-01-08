@@ -5,12 +5,18 @@ import service.BroadcastService;
 import service.MasterDiscoveryService;
 import types.Broadcast;
 import util.ServiceManager;
+import util.SimpleApp;
 
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-public class Main {
+public class Main extends SimpleApp {
+    /**
+     * Options
+     */
+    Options options_ = null;
+
     /**
      * Services
      */
@@ -30,10 +36,49 @@ public class Main {
      * Entry point
      * @param args commandline
      */
-    public static void main( String[] args )
-    {
+    public static void main( String[] args) {
+        new Main().Run(args);
+    }
+
+    /**
+     * OnInit
+     */
+    @Override
+    public void OnInit() {
+        // Option handler
+        options_ = new Options();
+
+        // Service manager
+        services_ = new ServiceManager();
+
+        // Register services
         try {
-            new Main().Run();
+            RegisterServices();
+        } catch (SocketException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Get options
+     * @return
+     */
+    @Override
+    public Object GetOptions() {
+        return options_;
+    }
+
+    /**
+     * Entry point
+     */
+    @Override
+    public void OnApp() {
+        // Register threaded services
+        services_.Start();
+
+        // Wait handler
+        try {
+            services_.Wait();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -56,20 +101,4 @@ public class Main {
         services_.Register(discovery_);
     }
 
-    /**
-     * Run
-     */
-    public void Run() throws InterruptedException {
-        try {
-            RegisterServices();
-        } catch (SocketException e) {
-            e.printStackTrace();
-        }
-
-        // Register threaded services
-        services_.Start();
-
-        // Wait handler
-        services_.Wait();
-    }
 }

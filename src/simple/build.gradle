@@ -22,7 +22,7 @@ jar {
 
 task fatJar(type: Jar) {
     manifest {
-        attributes 'Implementation-Title': 'Node',
+        attributes 'Implementation-Title': 'Simple',
                 'Implementation-Version': sourceCompatibility,
                 'Main-Class': 'app.Main'
     }

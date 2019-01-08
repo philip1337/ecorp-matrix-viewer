@@ -25,11 +25,11 @@ public class BroadcastService extends BroadcastSocket {
     }
 
     /**
-     * Get discovery service
-     * @return discovery service
+     *
+     * @param s
      */
-    public MasterDiscoveryService GetDiscoveryService() {
-        return discovery_;
+    public void SetDiscoveryService(MasterDiscoveryService s) {
+        discovery_ = s;
     }
 
     /**
@@ -55,6 +55,9 @@ public class BroadcastService extends BroadcastSocket {
      * @param address
      */
     private void PacketEhlo(ByteBuffer data, InetAddress address) {
+        // Discovery isnt registered...?
+        assert(discovery_ != null);
+
         // Determine address length
         int addrLenght = address.getAddress().length;
 

@@ -11,5 +11,23 @@ repositories {
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     compile 'com.github.pvdberg1998:pnet:1.5.10'
-    implementation project(':src:common')
+    compile project(':src:common')
 }
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'app.Main'
+    }
+}
+
+task fatJar(type: Jar) {
+    manifest {
+        attributes 'Implementation-Title': 'Master',
+                   'Implementation-Version': sourceCompatibility,
+                   'Main-Class': 'app.Main'
+    }
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
