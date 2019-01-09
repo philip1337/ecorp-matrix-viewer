@@ -1,11 +1,11 @@
 package app;
 
+import com.fazecast.jSerialComm.SerialPort;
 import fpga.Transmitter;
 import fpga.Types;
 import util.ImageLoader;
 import util.SimpleApp;
 
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -50,8 +50,14 @@ public class Main extends SimpleApp {
         // Transmitter
         Transmitter t = new Transmitter();
 
+        // Show devices
+        if (options_.showDevices_) {
+            t.DumpModules();    // System output
+            return;
+        }
+
         // Find matrix module
-        byte ret = t.FindModule();
+        byte ret = t.FindModule(options_.device_);
         if (ret != Types.READY) {
             System.out.printf("[Error] Failed to initialize matrix error code: %d. \n", ret);
             return;
@@ -81,20 +87,20 @@ public class Main extends SimpleApp {
 
         // TODO: TransmitImage should support != 16x16
         if (options_.width_ != 16 || options_.height_ != 16) {
-            System.out.printf("[Warning] We just support 16x16 currently, skipping transmission.\n");
+            System.out.println("[Warning] We just support 16x16 currently, skipping transmission.");
             return;
         }
 
         // Transmit image to matrix
         try {
             // Info message
-            System.out.printf("[Info] Size: %dx%d - picture: %s \n", options_.width_, options_.height_, f.getAbsolutePath());
+            System.out.printf("[Info] Brightness: %f Size: %dx%d - picture: %s \n", options_.brightness_, options_.width_, options_.height_, f.getAbsolutePath());
 
             // Resize image
             image = i.Resize(image, options_.width_, options_.height_);
 
             // Transmit
-            t.TransmitImage(image);
+            t.TransmitImage(image, options_.brightness_);
         } catch (IOException e) {
             System.out.printf("[Error] Failed to transmit image error message: %s \n", e.getMessage());
         }

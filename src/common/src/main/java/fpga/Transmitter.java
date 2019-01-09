@@ -2,7 +2,7 @@ package fpga;
 
 import com.fazecast.jSerialComm.SerialPort;
 
-import java.awt.*;
+import util.Color;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -22,11 +22,31 @@ public class Transmitter {
     }
 
     /**
-     * Discover module
+     * Get serial ports
+     * @return ports
+     */
+    public SerialPort[] GetModules() {
+        return SerialPort.getCommPorts();
+    }
+
+    /**
+     * Show modules
+     */
+    public void DumpModules() {
+        for (SerialPort p : GetModules()) {
+            System.out.printf("System: %s | port: %s | description: %s \n",
+                    p.getSystemPortName(),
+                    p.getDescriptivePortName(),
+                    p.getPortDescription());
+        }
+    }
+
+    /**
+     * Discover first com serial module
      * @return 3 = Types.READY if success.
      */
-    public byte FindModule() {
-        SerialPort[] ports = SerialPort.getCommPorts();
+    public byte FirstModule() {
+        SerialPort[] ports = GetModules();
 
         // Module is not connected
         if (ports.length <= 0) {
@@ -40,6 +60,39 @@ public class Transmitter {
 
             // If port is valid we stop here
             if (p.openPort() && p.getOutputStream() != null) {
+                port_ = p;
+                return Types.READY;
+            }
+        }
+
+        // We're gucci
+        return Types.NOT_READY;
+    }
+
+    /**
+     * Discover module by name
+     * @return 3 = Types.READY if success.
+     */
+    public byte FindModule(String device) {
+        SerialPort[] ports = SerialPort.getCommPorts();
+
+        // Module is not connected
+        if (ports.length <= 0) {
+            return Types.NOT_CONECTED;
+        }
+
+        // Loop trough ports
+        for (SerialPort p : ports) {
+            // Device is not matching
+            if (!p.getSystemPortName().equals(device))
+                continue;
+
+            p.setComPortParameters(921600, 8, 1, SerialPort.NO_PARITY);
+            p.setComPortTimeouts(SerialPort.TIMEOUT_WRITE_BLOCKING, 0, 0);
+
+            // If port is valid we stop here
+            if (p.openPort() && p.getOutputStream() != null) {
+                System.out.printf("%s -  %s\n", p.getDescriptivePortName(), p.getSystemPortName());
                 port_ = p;
                 return Types.READY;
             }
@@ -110,9 +163,10 @@ public class Transmitter {
     /**
      * Transmit raw image pixels
      * @param img data
+     * @param brightness float 1 = max
      * @throws IOException if comport is failing
      */
-    public void TransmitImage(BufferedImage img) throws IOException {
+    public void TransmitImage(BufferedImage img, float brightness) throws IOException {
         assert port_ != null : "No port found";
 
         // Output stream
@@ -136,16 +190,14 @@ public class Transmitter {
             if (readFromBeginning) {
                 for (int x = 0; x < 8; ++x) {
                     final Color c = new Color(img.getRGB(x, y));
-                    o.write(String.format("%02X", c.getRed()).getBytes());
-                    o.write(String.format("%02X", c.getGreen()).getBytes());
-                    o.write(String.format("%02X", c.getBlue()).getBytes());
+                    c.SetBrightness(brightness);
+                    o.write(c.ToBytes());
                 }
             } else {
                 for (int x = 16 - 1; x >= 8; --x) {
                     final Color c = new Color(img.getRGB(x, y));
-                    o.write(String.format("%02X", c.getRed()).getBytes());
-                    o.write(String.format("%02X", c.getGreen()).getBytes());
-                    o.write(String.format("%02X", c.getBlue()).getBytes());
+                    c.SetBrightness(brightness);
+                    o.write(c.ToBytes());
                 }
             }
             o.write(">".getBytes());
@@ -155,16 +207,14 @@ public class Transmitter {
             if (readFromBeginning) {
                 for (int x = 8; x < 16; ++x) {
                     final Color c = new Color(img.getRGB(x, y));
-                    o.write(String.format("%02X", c.getRed()).getBytes());
-                    o.write(String.format("%02X", c.getGreen()).getBytes());
-                    o.write(String.format("%02X", c.getBlue()).getBytes());
+                    c.SetBrightness(brightness);
+                    o.write(c.ToBytes());
                 }
             } else {
                 for (int x = 8 - 1; x >= 0; --x) {
                     final Color c = new Color(img.getRGB(x, y));
-                    o.write(String.format("%02X", c.getRed()).getBytes());
-                    o.write(String.format("%02X", c.getGreen()).getBytes());
-                    o.write(String.format("%02X", c.getBlue()).getBytes());
+                    c.SetBrightness(brightness);
+                    o.write(c.ToBytes());
                 }
             }
             o.write(">".getBytes());
