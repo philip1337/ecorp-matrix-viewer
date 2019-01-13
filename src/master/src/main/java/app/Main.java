@@ -1,18 +1,9 @@
 package app;
 
-import fpga.Translate;
-import fpga.Transmitter;
-import fpga.Types;
+import service.MasterServerService;
 import util.ConfigReader;
-import util.ImageLoader;
+import util.ServiceManager;
 import util.SimpleApp;
-
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.logging.Logger;
 
 /**
  * Main
@@ -21,12 +12,22 @@ public class Main extends SimpleApp {
     /**
      * Options
      */
-    Options options_ = null;
+    private Options options_ = null;
+
+    /**
+     * Services
+     */
+    private ServiceManager services_ = null;
+
+    /**
+     * Master service
+     */
+    private MasterServerService master_ = null;
 
     /**
      * Config
      */
-    ConfigReader cfg_ = null;
+    private ConfigReader cfg_ = null;
 
     /**
      * Main
@@ -34,14 +35,6 @@ public class Main extends SimpleApp {
      */
     public static void main(String[] args) {
         new Main().Run(args);
-    }
-
-    /**
-     * OnInit
-     */
-    @Override
-    public void OnInit() {
-        options_ = new Options();
     }
 
     /**
@@ -54,10 +47,52 @@ public class Main extends SimpleApp {
     }
 
     /**
+     * OnLoad
+     */
+    @Override
+    public void OnLoad() {
+        options_ = new Options();
+
+        // Service manager
+        services_ = new ServiceManager();
+    }
+
+    /**
+     * Entry point
+     */
+    @Override
+    public void OnInit() {
+        RegisterServices();
+    }
+
+    /**
      * Entry point
      */
     @Override
     public void OnApp() {
+        // Register threaded services
+        services_.Start();
 
+        // Wait handler
+        try {
+            services_.Wait();
+        } catch (InterruptedException e) {
+            // Silent exit
+        }
+    }
+
+    /**
+     * Register services
+     */
+    private void RegisterServices() {
+        // Master service
+        master_ = new MasterServerService(options_.port_);
+
+        // Try to initialize ssl
+        if (options_.ssl_)
+            master_.InitializeSSL();
+
+        // Register
+        services_.Register(master_);
     }
 }

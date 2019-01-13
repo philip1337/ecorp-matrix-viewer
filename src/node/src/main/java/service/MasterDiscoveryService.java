@@ -36,6 +36,16 @@ public class MasterDiscoveryService extends Thread {
     }
 
     /**
+     * Pop addr
+     */
+    public InetAddress PopAddress() {
+        if (masterList_.size() <= 0)
+            return null;
+
+        return masterList_.remove(0);
+    }
+
+    /**
      * Main thread handler
      */
     public void run() {

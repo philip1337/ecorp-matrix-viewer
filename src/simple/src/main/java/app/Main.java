@@ -1,6 +1,5 @@
 package app;
 
-import com.fazecast.jSerialComm.SerialPort;
 import fpga.Transmitter;
 import fpga.Types;
 import util.ImageLoader;
@@ -94,7 +93,8 @@ public class Main extends SimpleApp {
         // Transmit image to matrix
         try {
             // Info message
-            System.out.printf("[Info] Brightness: %f Size: %dx%d - picture: %s \n", options_.brightness_, options_.width_, options_.height_, f.getAbsolutePath());
+            System.out.printf("[Info] Brightness: %f Size: %dx%d - picture: %s \n",
+                              options_.brightness_, options_.width_, options_.height_, f.getAbsolutePath());
 
             // Resize image
             image = i.Resize(image, options_.width_, options_.height_);

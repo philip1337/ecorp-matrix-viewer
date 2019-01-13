@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
-import java.util.HashMap;
 
 public class BroadcastService extends BroadcastSocket {
     /**
@@ -45,8 +44,6 @@ public class BroadcastService extends BroadcastSocket {
     public void PacketHelo(ByteBuffer data, InetAddress address) throws IOException {
         // Verify magic
         String magic = new String(data.array(), "ASCII");
-        System.out.printf("Magic: %s \n", magic);
-
         if (!magic.equals(Broadcast.HEADER_MAGIC))
             return;
 

@@ -35,9 +35,9 @@ public class Transmitter {
     public void DumpModules() {
         for (SerialPort p : GetModules()) {
             System.out.printf("System: %s | port: %s | description: %s \n",
-                    p.getSystemPortName(),
-                    p.getDescriptivePortName(),
-                    p.getPortDescription());
+                              p.getSystemPortName(),
+                              p.getDescriptivePortName(),
+                              p.getPortDescription());
         }
     }
 
@@ -136,28 +136,6 @@ public class Transmitter {
      */
     public void TransmitUartBuffer(ByteBuffer buffer) throws IOException {
         Transmit(buffer.array());
-    }
-
-    /**
-     * Get image buffer
-     * @param img Buffer
-     * @return ByteBuffer with translated image for the rgb matrix
-     */
-    public ByteBuffer Image(BufferedImage img) {
-        // Translate image
-        int height = img.getHeight();
-        int width = img.getWidth();
-        int size = height * width * (Integer.SIZE / 8);
-
-        assert width == 16;
-        assert height == 16;
-
-
-
-        // Buffer
-        ByteBuffer buffer = ByteBuffer.allocate(size);
-
-        return buffer;
     }
 
     /**

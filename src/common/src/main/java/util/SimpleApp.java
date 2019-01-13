@@ -9,7 +9,7 @@ public class SimpleApp {
      * @return true if app is ready
      */
     public boolean Run(String[] args) {
-        OnInit();
+        OnLoad();
 
         // Get options
         Object o = GetOptions();
@@ -29,6 +29,7 @@ public class SimpleApp {
             return false;
         }
 
+        OnInit();
         OnApp();
         return true;
     }
@@ -45,6 +46,7 @@ public class SimpleApp {
         // TODO: Overwrite object values with propertie values
     }
 
+    public void OnLoad() {}
     public void OnInit() {}
     public void OnApp() {}
 }
