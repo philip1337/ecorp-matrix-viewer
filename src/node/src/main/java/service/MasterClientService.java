@@ -14,10 +14,17 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
+import message.Message;
 import net.MasterClientHandler;
+import net.MasterPackets;
+import types.Master;
 import util.Thread;
 
 import javax.net.ssl.SSLException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class MasterClientService extends Thread {
@@ -47,12 +54,23 @@ public class MasterClientService extends Thread {
     private AtomicBoolean ready_ = new AtomicBoolean(false);
 
     /**
+     * Master client handler
+     */
+    private MasterClientHandler handler_ = null;
+
+    /**
+     * Reconnect state
+     */
+    private AtomicBoolean reconnect_ = new AtomicBoolean(false);
+
+    /**
      * Constructor
      */
     public MasterClientService(String host, int port) {
         port_ = port;
         host_ = host;
         worker_ = new NioEventLoopGroup();
+        handler_ = new MasterClientHandler();
     }
 
     /**
@@ -60,7 +78,23 @@ public class MasterClientService extends Thread {
      * @return true if ready
      */
     public boolean Ready() {
-        return ready_.get();
+        return ready_.get() && handler_.Ready();
+    }
+
+    /**
+     * Check if this is a reconnect service
+     * @return true if ready
+     */
+    public boolean Reconnect() {
+        return reconnect_.get();
+    }
+
+    /**
+     * Reconnect
+     * @param value to overwrite
+     */
+    public void SetReconnect(boolean value) {
+        reconnect_.set(value);
     }
 
     /**
@@ -69,6 +103,14 @@ public class MasterClientService extends Thread {
      */
     public String GetHost() {
         return host_;
+    }
+
+    /**
+     * Get host port
+     * @return port
+     */
+    public int GetPort() {
+        return port_;
     }
 
     /**
@@ -86,6 +128,44 @@ public class MasterClientService extends Thread {
     }
 
     /**
+     * Get Handler
+     * @return master handler
+     */
+    public MasterClientHandler GetHandler() {
+        return handler_;
+    }
+
+    /**
+     * Notify
+     * @param width x
+     * @param height y
+     */
+    public void Notify(int width, int height) {
+        // Get mx data
+        RuntimeMXBean b = ManagementFactory.getRuntimeMXBean();
+        String hostname = "";
+
+        // Try to get node hostname
+        try {
+            hostname = InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+
+        // Send master packet
+        handler_.Send(Master.HEADER_MN_HELO, MasterPackets.CreateHelo(
+                Master.VERSION,
+                Master.HEADER_MAGIC,
+                width,
+                height,
+                b.getUptime(),
+                b.getVmVersion(),
+                b.getVmName(),
+                hostname
+        ));
+    }
+
+    /**
      * Run
      */
     public void run() {
@@ -94,20 +174,20 @@ public class MasterClientService extends Thread {
             b.group(worker_)
                     .channel(NioSocketChannel.class)
                     .handler(new ChannelInitializer<SocketChannel>() {
-                @Override
-                public void initChannel(SocketChannel ch) throws Exception {
-                    ChannelPipeline p = ch.pipeline();
-                    if (ctx_ != null) {
-                        p.addLast(ctx_.newHandler(ch.alloc(), host_, port_));
-                    }
+                        @Override
+                        public void initChannel(SocketChannel ch) throws Exception {
+                            ChannelPipeline p = ch.pipeline();
+                            if (ctx_ != null) {
+                                p.addLast(ctx_.newHandler(ch.alloc(), host_, port_));
+                            }
 
-                    p.addLast(
-                        new ObjectEncoder(),
-                        new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
-                        new MasterClientHandler()
-                    );
-                }
-            });
+                            p.addLast(
+                                    new ObjectEncoder(),
+                                    new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
+                                    handler_
+                            );
+                        }
+                    });
 
             // Start the connection attempt.
             ChannelFuture f = b.connect(host_, port_);

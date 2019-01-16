@@ -70,7 +70,7 @@ public class Main extends SimpleApp {
         services_ = new ServiceManager();
 
         // Master list
-        masters_ = new ArrayList<MasterClientService>();
+        masters_ = new ArrayList<>();
     }
 
     /**
@@ -96,22 +96,71 @@ public class Main extends SimpleApp {
 
         // Wait handler
         try {
-            // Connect (we freeze till we're ready)
-            Connect();
 
-            // Clean
-            CleanMasters();
+            while(true) {
+                // Try to connect if master is not ready
+                if (master_ == null || !master_.Ready()) {
+                    // Interrupt old service and restart connect process
+                    if (master_ != null)
+                        master_ .Interrupt();
+                    master_ = null;
 
-            // If master
-            if (master_ != null) {
-                System.out.println("We're connected");
+                    Connect();
+                    Notify();
+                }
+
+                // Clean pending masters
+                CleanMasters();
             }
 
             // Wait till we exit
-            services_.Wait();
+            //services_.Wait();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Notify
+     */
+    private void Notify() {
+        // Not connected
+        if (master_ == null)
+            return;
+
+        // Notify
+        master_.Notify(options_.width_, options_.height_);
+    }
+
+    /**
+     * Master service
+     */
+    private void RegisterMasterClientService() {
+        // TODO: Remuve debug
+        options_.master_ = "127.0.0.1";
+
+        // Append default service
+        if (options_.master_.length() > 0) {
+            // Register to possible masters
+            masters_.add(CreateService(options_.master_, options_.port_, true));
+        }
+    }
+
+    /**
+     * Create service
+     * @param host ip
+     * @param port number
+     * @param reconnect true if service should reconnect
+     * @return service
+     */
+    private MasterClientService CreateService(String host, int port, boolean reconnect) {
+        // Master client services...
+        final MasterClientService s = new MasterClientService(host, port);
+        if (options_.ssl_)
+            s.InitializeSSL();
+        s.SetReconnect(reconnect);
+        s.Start();
+        return s;
     }
 
     /**
@@ -122,21 +171,8 @@ public class Main extends SimpleApp {
         // Register
         boolean register;
 
-        // TODO: Remuve debug
-        options_.master_ = "127.0.0.1";
-
-        // Append default service
-        if (options_.master_.length() > 0) {
-            // Master client services...
-            final MasterClientService s = new MasterClientService(options_.master_, options_.port_);
-            if (options_.ssl_)
-                s.InitializeSSL();
-
-            s.Start();
-
-            // Register to possible masters
-            masters_.add(s);
-        }
+        // Master
+        RegisterMasterClientService();
 
         // Connect loop
         while (true) {
@@ -148,6 +184,18 @@ public class Main extends SimpleApp {
 
             // Check if one of the services is ready
             for (MasterClientService service : masters_) {
+                // If service is not
+                if ((service.isInterrupted() || !service.isAlive()) && service.Reconnect()) {
+                    // Register a new one
+                    masters_.add(CreateService(service.GetHost(), service.GetPort(), service.Reconnect()));
+
+                    // Pause for atleast 6 seconds to avoid reconnects
+                    Thread.sleep(1000 * 6);
+
+                    // Remove the old one
+                    masters_.remove(service);
+                }
+
                 // Addr check
                 if (addr != null && !service.GetHost().equals(addr.getHostAddress())) {
                     register = true;

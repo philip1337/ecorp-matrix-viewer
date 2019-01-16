@@ -21,4 +21,13 @@ public class Options {
 
     @CommandLine.Option(names = { "-ssl", "--secure-socket-layer" }, description = "Enable ssl encryption")
     public boolean ssl_ = false;
+
+    @CommandLine.Option(names = { "-x", "--width" }, description = "Width of the matrix (x, default: 16).")
+    public int width_ = 16;
+
+    @CommandLine.Option(names = { "-y", "--height" }, description = "Height of the matrix (y, default: 16).")
+    public int height_ = 16;
+
+    @CommandLine.Option(names = { "-d", "--device" }, description = "Select matrix device endpoint.")
+    public String device_ = "cu.usbserial-16";
 }

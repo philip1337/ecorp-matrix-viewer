@@ -38,7 +38,7 @@ public class ServiceManager {
      */
     public void Stop() {
         for(Thread r : services_) {
-            r.interrupt();
+            r.Interrupt();
         }
     }
 

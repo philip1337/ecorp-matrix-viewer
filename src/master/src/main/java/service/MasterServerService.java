@@ -16,10 +16,15 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import net.MasterServerHandler;
+import types.Client;
 import util.Thread;
 
 import javax.net.ssl.SSLException;
+import java.awt.image.BufferedImage;
 import java.security.cert.CertificateException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class MasterServerService extends Thread {
     /**
@@ -39,12 +44,28 @@ public class MasterServerService extends Thread {
     private int port_ = 0;
 
     /**
+     * Handler
+     */
+    private MasterServerHandler handler_ = null;
+
+
+    /**
+     * Clients
+     */
+    private List<Client> clients_ = null;
+
+    /**
      * Constructor
      */
     public MasterServerService(int port) {
         port_ = port;
         boss_ = new NioEventLoopGroup(1);
         worker_ = new NioEventLoopGroup();
+        handler_ = new MasterServerHandler();
+
+        // Clear list
+        clients_ = Collections.synchronizedList(new ArrayList<>());
+        handler_.SetClientList(clients_);
     }
 
     /**
@@ -87,7 +108,7 @@ public class MasterServerService extends Thread {
                 p.addLast(
                     new ObjectEncoder(),
                     new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
-                    new MasterServerHandler()
+                    handler_
                 );
             }
         });
@@ -99,5 +120,14 @@ public class MasterServerService extends Thread {
             // TODO: Log
             e.printStackTrace();
         }
+    }
+
+
+    /**
+     * Send image
+     * @param img
+     */
+    public void SendImageWithOptions(BufferedImage img) {
+
     }
 }

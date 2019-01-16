@@ -1,9 +1,12 @@
 package app;
 
+import service.BroadcastService;
 import service.MasterServerService;
 import util.ConfigReader;
 import util.ServiceManager;
 import util.SimpleApp;
+
+import java.net.SocketException;
 
 /**
  * Main
@@ -20,14 +23,14 @@ public class Main extends SimpleApp {
     private ServiceManager services_ = null;
 
     /**
+     * Broadcast service
+     */
+    private BroadcastService broadcast_ = null;
+
+    /**
      * Master service
      */
     private MasterServerService master_ = null;
-
-    /**
-     * Config
-     */
-    private ConfigReader cfg_ = null;
 
     /**
      * Main
@@ -87,6 +90,14 @@ public class Main extends SimpleApp {
     private void RegisterServices() {
         // Master service
         master_ = new MasterServerService(options_.port_);
+
+        // Initialize broadcast service
+        try {
+            broadcast_ = new BroadcastService(options_.broadcast_);
+            services_.Register(broadcast_);
+        } catch (SocketException e) {
+            // TODO: Log if failed
+        }
 
         // Try to initialize ssl
         if (options_.ssl_)
