@@ -153,7 +153,7 @@ public class MasterClientService extends Thread {
         }
 
         // Send master packet
-        handler_.Send(Master.HEADER_MN_HELO, MasterPackets.CreateHelo(
+        handler_.Send(Master.HEADER_NM_HELO, MasterPackets.CreateHelo(
                 Master.VERSION,
                 Master.HEADER_MAGIC,
                 width,

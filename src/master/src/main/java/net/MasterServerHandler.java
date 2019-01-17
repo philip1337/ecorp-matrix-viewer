@@ -8,6 +8,10 @@ import message.Message;
 import types.Client;
 import types.Master;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
 
 /**
@@ -39,11 +43,34 @@ public class MasterServerHandler extends ChannelInboundHandlerAdapter {
                 return;
         }
 
-        // Register
-        clients_.add(new Client(
+        // Add client
+        Client c = new Client(
                 ctx, msg.width, msg.height, msg.version_, msg.time_,
                 msg.vmVersion_, msg.vmName_, msg.hostname_
-        ));
+        );
+
+        // Register
+        clients_.add(c);
+
+        // Get mx data
+        RuntimeMXBean b = ManagementFactory.getRuntimeMXBean();
+        String hostname = "";
+
+        // Try to get node hostname
+        try {
+            hostname = InetAddress.getLocalHost().getHostName();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        }
+
+        // Create Ehlo response
+        Message m = new Message();
+        m.header_ = Master.HEADER_MN_EHLO;
+        m.object_ = NodePackets.CreateEhlo(Master.VERSION, Master.HEADER_MAGIC,
+                               b.getVmVersion(), b.getVmName(), hostname, b.getUptime());
+
+        // Answer
+        c.Write(m);
     }
 
     /**
@@ -58,6 +85,11 @@ public class MasterServerHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
+    /**
+     * Read incoming stream
+     * @param ctx channel
+     * @param msg message
+     */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         // Message
@@ -65,7 +97,7 @@ public class MasterServerHandler extends ChannelInboundHandlerAdapter {
 
         // Header
         switch(message.header_) {
-            case Master.HEADER_MN_HELO:
+            case Master.HEADER_NM_HELO:
                 // Validate object type
                 if (message.object_.getClass() != HeloMessage.class)
                     return;
@@ -86,11 +118,20 @@ public class MasterServerHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
+    /**
+     * On read complete
+     * @param ctx channel
+     */
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) {
         ctx.flush();
     }
 
+    /**
+     * On channel error (closed, disconnect etc.)
+     * @param ctx channel
+     * @param cause reason
+     */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         // First unregister
@@ -115,8 +156,8 @@ public class MasterServerHandler extends ChannelInboundHandlerAdapter {
 
     /**
      * Send to all clients
-     * @param header
-     * @param o
+     * @param header byte
+     * @param o serializable object
      */
     public void SendToAll(int header, Object o) {
         Message msg = new Message();

@@ -2,7 +2,7 @@ package net;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import message.HeloMessage;
+import message.EhloMessage;
 import message.Message;
 import types.Master;
 
@@ -11,6 +11,9 @@ import java.util.Collections;
 import java.util.List;
 
 public class MasterClientHandler extends ChannelInboundHandlerAdapter {
+    /**
+     * Master channels (our service can listen to multiple master servers)
+     */
     private List<ChannelHandlerContext> channels_ = null;
 
     /**
@@ -21,11 +24,20 @@ public class MasterClientHandler extends ChannelInboundHandlerAdapter {
         channels_ = Collections.synchronizedList(new ArrayList<>());
     }
 
+    /**
+     * Channel active (ready)
+     * @param ctx channel
+     */
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         channels_.add(ctx);
     }
 
+    /**
+     * Channel read
+     * @param ctx channel
+     * @param msg message
+     */
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) {
         // Message
@@ -33,20 +45,34 @@ public class MasterClientHandler extends ChannelInboundHandlerAdapter {
 
         // Header
         switch(message.header_) {
-            case Master.HEADER_MN_IMAGE:
-                System.out.printf("we got here something");
+            case Master.HEADER_MN_EHLO:
+                EhloMessage m = (EhloMessage)message.object_;
+                //TODO: Log master response...
                 break;
+
+            case Master.HEADER_MN_IMAGE:
+                break;
+
             default:
                 // TODO: Log
                 System.out.printf("Invalid header: %d\n", message.header_);
         }
     }
 
+    /**
+     * Read complete
+     * @param ctx channel
+     */
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) {
         ctx.flush();
     }
 
+    /**
+     * On channel error
+     * @param ctx channel
+     * @param cause reason
+     */
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         // TODO: Log
@@ -73,7 +99,7 @@ public class MasterClientHandler extends ChannelInboundHandlerAdapter {
     public void Send(int header, Object o) {
         // Send mesasge
         Message msg = new Message();
-        msg.header_ = Master.HEADER_MN_HELO;
+        msg.header_ = header;
 
         // Packet data
         msg.object_ = o;
@@ -83,7 +109,7 @@ public class MasterClientHandler extends ChannelInboundHandlerAdapter {
 
     /**
      * Ready
-     * @return true if channel is ready
+     * @return true if one channel is ready
      */
     public boolean Ready() {
         return channels_.size() > 0;
