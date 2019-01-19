@@ -5,7 +5,9 @@ import service.MasterServerService;
 import service.WebServerService;
 import util.ServiceManager;
 import util.SimpleApp;
+import veloxio.Provider;
 
+import java.io.FileNotFoundException;
 import java.net.SocketException;
 
 /**
@@ -38,6 +40,11 @@ public class Main extends SimpleApp {
     private WebServerService web_ = null;
 
     /**
+     * VeloxIO Data provider
+     */
+    private Provider provider_ = null;
+
+    /**
      * Main
      * @param args
      */
@@ -55,14 +62,28 @@ public class Main extends SimpleApp {
     }
 
     /**
+     * Is dev
+     * @return true if is running in dev or ide
+     */
+    private boolean IsDev()
+    {
+        String classPath = System.getProperty("java.class.path");
+        return classPath.contains("idea_rt.jar");
+    }
+
+    /**
      * OnLoad
      */
     @Override
     public void OnLoad() {
+        // Options
         options_ = new Options();
 
         // Service manager
         services_ = new ServiceManager();
+
+        // VeloxIO - web asset provider
+        provider_ = new Provider(IsDev(), "src/master-web-ui/");
     }
 
     /**
@@ -70,7 +91,20 @@ public class Main extends SimpleApp {
      */
     @Override
     public void OnInit() {
+        // Register services
         RegisterServices();
+
+        // Developer path
+        if (IsDev())
+            options_.assets_ = "src/master/build/libs/web.big";
+
+        // Try to register web asset archive
+        try {
+            provider_.RegisterArchive(options_.assets_);
+        } catch (FileNotFoundException e) {
+            // TODO: Log
+            System.out.printf("Failed: %s\n", e.getMessage());
+        }
     }
 
     /**
@@ -95,7 +129,7 @@ public class Main extends SimpleApp {
     private void RegisterServices() {
         // Master service
         master_ = new MasterServerService(options_.port_);
-        web_ = new WebServerService(options_.webPort_);
+        web_ = new WebServerService(options_.webPort_, provider_);
 
         // Initialize broadcast service
         try {

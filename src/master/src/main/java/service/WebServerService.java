@@ -20,6 +20,7 @@ import io.netty.handler.ssl.util.SelfSignedCertificate;
 import route.*;
 import types.WebRouteTable;
 import util.Thread;
+import veloxio.Provider;
 
 import javax.net.ssl.SSLException;
 import java.security.cert.CertificateException;
@@ -47,13 +48,20 @@ public class WebServerService extends Thread {
     private WebRouteTable router_ = null;
 
     /**
+     * Asset provider
+     */
+    private Provider provider_ = null;
+
+    /**
      * Constructor
      */
-    public WebServerService(int port) {
+    public WebServerService(int port, Provider provider) {
         boss_ = new NioEventLoopGroup(1);
         worker_ = new NioEventLoopGroup();
         port_ = port;
-        router_ = new WebRouteTable();
+
+        router_ = new WebRouteTable(provider_);
+        provider_ = provider;
 
         InitializeRoutes();
     }
@@ -110,7 +118,7 @@ public class WebServerService extends Thread {
                         }
                         p.addLast(new HttpRequestDecoder());
                         p.addLast(new HttpResponseEncoder());
-                        p.addLast(new WebServerHandler(router_));
+                        p.addLast(new WebServerHandler(router_, provider_));
                     }
                 });
 

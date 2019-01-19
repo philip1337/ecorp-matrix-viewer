@@ -8,13 +8,23 @@ import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.multipart.*;
 import io.netty.util.CharsetUtil;
 
+import io.netty.util.internal.SystemPropertyUtil;
 import types.WebRouteTable;
 import types.WebSession;
+import veloxio.ArchiveFile;
+import veloxio.Provider;
 
+import javax.activation.MimetypesFileTypeMap;
+import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static io.netty.handler.codec.http.HttpVersion.*;
@@ -31,11 +41,17 @@ public class WebServerHandler extends SimpleChannelInboundHandler<Object> {
     private WebRouteTable router_ = null;
 
     /**
+     * Asset provider
+     */
+    private Provider provider_ = null;
+
+    /**
      * Constructor
      * @param router to route web requests
      */
-    public WebServerHandler(WebRouteTable router) {
+    public WebServerHandler(WebRouteTable router, Provider provider) {
         router_ = router;
+        provider_ = provider;
         sessions_ = Collections.synchronizedMap(new HashMap<>());
     }
 
@@ -74,12 +90,6 @@ public class WebServerHandler extends SimpleChannelInboundHandler<Object> {
 
             // Cast request
             HttpRequest request = s.request_ = (HttpRequest) msg;
-            HttpHeaders headers = request.headers();
-
-            // TODO: Add velox-io-java asset delivery...
-            if (request.method() == HttpMethod.GET) {
-                // We'll give veloxio a try
-            }
 
             // Check if channel is 100 continue
             if (HttpUtil.is100ContinueExpected(request)) {
@@ -94,15 +104,27 @@ public class WebServerHandler extends SimpleChannelInboundHandler<Object> {
 
             // Find route
             s.route_ = router_.FindRoute(request.method(), request.uri());
-            if (s.route_ == null) {
+
+            // If route is not found maybe it is an asset...
+            if (s.route_ == null && request.method() == HttpMethod.GET) {
+                try {
+                    // Get file from archive
+                    s.dataBuffer_ = provider_.Get(request.uri());
+                } catch (IOException e) {}
+            }
+
+            // If we cant find both... we respond with a 404
+            if (s.route_ == null && s.dataBuffer_ == null) {
                 // We try 2 go for the 404
                 s.route_ = router_.FindRoute(HttpMethod.GET, "/404");
+
+                // Fatal btw... (404 should always be an existent route...)
                 if (s.route_ == null) {
-                    s.buffer_.append("Error, server not ready!\r\n");
+                    s.buffer_.append("Error, server not ready (fatal!)!\r\n");
                     s.buffer_.append("===================================\r\n");
                     s.buffer_.append("VERSION: ").append(request.protocolVersion()).append("\r\n");
                     s.buffer_.append("HOSTNAME: ").append(request.headers()
-                                                .get(HttpHeaderNames.HOST, "unknown")).append("\r\n");
+                             .get(HttpHeaderNames.HOST, "unknown")).append("\r\n");
                     s.buffer_.append("REQUEST_URI: ").append(request.uri()).append("\r\n\r\n");
                 }
             }
@@ -177,28 +199,51 @@ public class WebServerHandler extends SimpleChannelInboundHandler<Object> {
         // Decide whether to close the connection or not.
         boolean keepAlive = HttpUtil.isKeepAlive(s.request_);
 
-        // Build the response object.
-        FullHttpResponse response = new DefaultFullHttpResponse(
-                HTTP_1_1, currentObj.decoderResult().isSuccess()? OK : BAD_REQUEST,
-                Unpooled.copiedBuffer(s.buffer_.toString(), CharsetUtil.UTF_8)
-        );
+        // If data buffer we go for a simple response
+        if (s.dataBuffer_ != null) {
+            HttpResponse response = new DefaultHttpResponse(HTTP_1_1, OK);
+            HttpUtil.setContentLength(response, s.dataBuffer_.length);
 
-        // Set content type
-        response.headers().set(HttpHeaderNames.CONTENT_TYPE,
-                s.route_ != null ? s.route_.type_ : "text/plain; charset=UTF-8"
-        );
+            // Keep alive 1.1
+            if (keepAlive) {
+                response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+            }
 
-        // Keep alive 1.1
-        if (keepAlive) {
-            // Add 'Content-Length' header only for a keep-alive connection.
-            response.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
-            // Add keep alive header as per:
-            // - http://www.w3.org/Protocols/HTTP/1.1/draft-ietf-http-v11-spec-01.html#Connection
-            response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+            // Get mime type
+            MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
+            response.headers().set(HttpHeaderNames.CONTENT_TYPE, mimeTypesMap.getContentType(s.request_.uri()));
+
+            // Response
+            ctx.write(response);
+
+            // File
+            ctx.write(new DefaultHttpContent(Unpooled.copiedBuffer(s.dataBuffer_)));
+
+            // Last content
+            ctx.writeAndFlush(LastHttpContent.EMPTY_LAST_CONTENT);
+        } else {
+            // Build the response object.
+            FullHttpResponse response = new DefaultFullHttpResponse(
+                    HTTP_1_1, currentObj.decoderResult().isSuccess() ? OK : BAD_REQUEST,
+                    Unpooled.copiedBuffer(s.buffer_.toString(), CharsetUtil.UTF_8)
+            );
+
+            // Set content type
+            response.headers().set(HttpHeaderNames.CONTENT_TYPE,
+                    s.route_ != null ? s.route_.type_ : "text/plain; charset=UTF-8"
+            );
+
+            // Keep alive 1.1
+            if (keepAlive) {
+                // Add 'Content-Length' header only for a keep-alive connection.
+                response.headers().setInt(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
+                // Add keep alive header as per:
+                // - http://www.w3.org/Protocols/HTTP/1.1/draft-ietf-http-v11-spec-01.html#Connection
+                response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
+            }
+
+            ctx.write(response);
         }
-
-        // Write the response.
-        ctx.write(response);
         return keepAlive;
     }
 

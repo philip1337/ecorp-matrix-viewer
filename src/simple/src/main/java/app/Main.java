@@ -24,10 +24,10 @@ public class Main extends SimpleApp {
     }
 
     /**
-     * OnInit
+     * OnLoad
      */
     @Override
-    public void OnInit() {
+    public void OnLoad() {
         // Option handler
         options_ = new Options();
     }

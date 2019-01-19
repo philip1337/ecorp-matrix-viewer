@@ -40,6 +40,11 @@ public class WebSession {
     private List<FileUpload> files_ = null;
 
     /**
+     * Extra buffer
+     */
+    public byte[] dataBuffer_ = null;
+
+    /**
      * Constructor
      */
     public WebSession() {
@@ -53,8 +58,10 @@ public class WebSession {
     public void Reset() {
         decoder_ = null;
         route_ = null;
+        dataBuffer_ = null;
         buffer_.setLength(0);
         attributes_.clear();
+        files_.clear();
     }
 
     /**

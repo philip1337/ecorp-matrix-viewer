@@ -2,6 +2,7 @@ package types;
 
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
+import veloxio.Provider;
 
 public class WebRoute {
     /**
@@ -27,6 +28,15 @@ public class WebRoute {
     public WebRoute(final HttpMethod method, final String path) {
         this.method_ = method;
         this.path_ = path;
+    }
+
+    /**
+     * Initialize
+     * @param provider (veloxio data provider)
+     * @return true if route is ready to run
+     */
+    public boolean Initialize(Provider provider) {
+        return true;
     }
 
     /**

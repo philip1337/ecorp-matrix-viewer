@@ -11,11 +11,8 @@ repositories {
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     compile 'com.github.pvdberg1998:pnet:1.5.10'
+    compile project(':src:veloxio')
     compile project(':src:common')
-	compile project(':src:veloxio')
-	
-    // https://mvnrepository.com/artifact/io.netty/netty-all
-    compile group: 'io.netty', name: 'netty-all', version: '4.1.32.Final'
 }
 
 jar {
@@ -24,19 +21,9 @@ jar {
     }
 }
 
-task web(type: JavaExec) {
-    dependsOn ':src:veloxio-archiver:fatJar'
-    //classpath = files('src/veloxio-archiver/build/libs/veloxio-archiver-all.jar')
-    main = "-jar"
-    workingDir = "../master-web-ui";
-    args("../veloxio-archiver/build/libs/veloxio-archiver-all.jar", "-a", "../master/build/libs/web.big")
-}
-
 task fatJar(type: Jar) {
-    dependsOn 'web'
-
     manifest {
-        attributes 'Implementation-Title': 'Master',
+        attributes 'Implementation-Title': 'Veloxio Archiver',
                    'Implementation-Version': sourceCompatibility,
                    'Main-Class': 'app.Main'
     }
