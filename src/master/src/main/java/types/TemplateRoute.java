@@ -9,7 +9,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
 
 public class TemplateRoute extends WebRoute {
     /**
