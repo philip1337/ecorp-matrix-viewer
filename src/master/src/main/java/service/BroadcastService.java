@@ -19,11 +19,14 @@ public class BroadcastService extends BroadcastSocket {
         super(port);
     }
 
+    /**
+     * Handle broadcast packets
+     * @param header byte
+     * @param data buffer
+     * @param address remote
+     */
     @Override
     public void HandlePacket(byte header, ByteBuffer data, InetAddress address) {
-        System.out.printf("Packet header: %d lenght: %d addr: %s \n",
-                          header, data.limit(), address.getHostAddress());
-
         try {
             switch (header) {
                 case Broadcast.HEADER_NM_HELO:
@@ -39,7 +42,7 @@ public class BroadcastService extends BroadcastSocket {
 
     /**
      * Discovery
-     * @param data
+     * @param data (containing packet data)
      */
     public void PacketHelo(ByteBuffer data, InetAddress address) throws IOException {
         // Verify magic

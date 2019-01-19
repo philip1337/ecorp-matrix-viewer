@@ -44,12 +44,6 @@ public class MasterServerService extends Thread {
     private int port_ = 0;
 
     /**
-     * Handler
-     */
-    private MasterServerHandler handler_ = null;
-
-
-    /**
      * Clients
      */
     private List<Client> clients_ = null;
@@ -61,11 +55,9 @@ public class MasterServerService extends Thread {
         port_ = port;
         boss_ = new NioEventLoopGroup(1);
         worker_ = new NioEventLoopGroup();
-        handler_ = new MasterServerHandler();
 
         // Clear list
         clients_ = Collections.synchronizedList(new ArrayList<>());
-        handler_.SetClientList(clients_);
     }
 
     /**
@@ -108,7 +100,7 @@ public class MasterServerService extends Thread {
                 p.addLast(
                     new ObjectEncoder(),
                     new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
-                    handler_
+                    new MasterServerHandler(clients_)
                 );
             }
         });

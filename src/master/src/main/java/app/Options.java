@@ -16,6 +16,9 @@ public class Options {
     @CommandLine.Option(names = { "-p", "--port" }, description = "Bind Port (default: 50000")
     public int port_ = 50000;
 
+    @CommandLine.Option(names = { "-wp", "--web-port" }, description = "Web port (default: 8080")
+    public int webPort_ = 8080;
+
     @CommandLine.Option(names = { "-bp", "--broadcast-port" }, description = "Bind Port (default: 50000")
     public int broadcast_ = 50001;
 

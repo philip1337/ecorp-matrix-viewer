@@ -2,7 +2,7 @@ package app;
 
 import service.BroadcastService;
 import service.MasterServerService;
-import util.ConfigReader;
+import service.WebServerService;
 import util.ServiceManager;
 import util.SimpleApp;
 
@@ -31,6 +31,11 @@ public class Main extends SimpleApp {
      * Master service
      */
     private MasterServerService master_ = null;
+
+    /**
+     * Web service
+     */
+    private WebServerService web_ = null;
 
     /**
      * Main
@@ -90,6 +95,7 @@ public class Main extends SimpleApp {
     private void RegisterServices() {
         // Master service
         master_ = new MasterServerService(options_.port_);
+        web_ = new WebServerService(options_.webPort_);
 
         // Initialize broadcast service
         try {
@@ -105,5 +111,6 @@ public class Main extends SimpleApp {
 
         // Register
         services_.Register(master_);
+        services_.Register(web_);
     }
 }

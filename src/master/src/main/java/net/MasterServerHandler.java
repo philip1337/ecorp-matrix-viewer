@@ -24,12 +24,13 @@ public class MasterServerHandler extends ChannelInboundHandlerAdapter {
     private List<Client> clients_ = null;
 
     /**
-     * Client list
-     * @param list containing clients
+     * Constructor
+     * @param list containing all nodes
      */
-    public void SetClientList(List<Client> list) {
+    public MasterServerHandler(List<Client> list) {
         clients_ = list;
     }
+
 
     /**
      * Register client
@@ -60,14 +61,15 @@ public class MasterServerHandler extends ChannelInboundHandlerAdapter {
         try {
             hostname = InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
-            e.printStackTrace();
+            // Otherwise.... unknown
+            hostname = "<Unknown>";
         }
 
         // Create Ehlo response
         Message m = new Message();
         m.header_ = Master.HEADER_MN_EHLO;
         m.object_ = NodePackets.CreateEhlo(Master.VERSION, Master.HEADER_MAGIC,
-                               b.getVmVersion(), b.getVmName(), hostname, b.getUptime());
+                                           b.getVmVersion(), b.getVmName(), hostname, b.getUptime());
 
         // Answer
         c.Write(m);
@@ -142,6 +144,16 @@ public class MasterServerHandler extends ChannelInboundHandlerAdapter {
 
         // Close channel
         ctx.close();
+    }
+
+    /**
+     * On channel exit
+     * @param ctx channel
+     * @throws Exception on error
+     */
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        RemoveClient(ctx);
     }
 
     /**
