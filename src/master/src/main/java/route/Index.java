@@ -31,6 +31,6 @@ public class Index extends TemplateRoute {
      */
     @Override
     protected JtwigModel Assign(JtwigModel model) {
-        return model;
+        return super.Assign(model);
     }
 }

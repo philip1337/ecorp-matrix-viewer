@@ -18,8 +18,11 @@ import javax.activation.MimetypesFileTypeMap;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URLConnection;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -209,10 +212,6 @@ public class WebServerHandler extends SimpleChannelInboundHandler<Object> {
                 response.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.KEEP_ALIVE);
             }
 
-            // Get mime type
-            MimetypesFileTypeMap mimeTypesMap = new MimetypesFileTypeMap();
-            response.headers().set(HttpHeaderNames.CONTENT_TYPE, mimeTypesMap.getContentType(s.request_.uri()));
-
             // Response
             ctx.write(response);
 
@@ -230,7 +229,7 @@ public class WebServerHandler extends SimpleChannelInboundHandler<Object> {
 
             // Set content type
             response.headers().set(HttpHeaderNames.CONTENT_TYPE,
-                    s.route_ != null ? s.route_.type_ : "text/plain; charset=UTF-8"
+                    s.route_ != null ? s.route_.GetType() : "text/plain; charset=UTF-8"
             );
 
             // Keep alive 1.1

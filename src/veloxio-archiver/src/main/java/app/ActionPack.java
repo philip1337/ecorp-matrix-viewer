@@ -196,7 +196,7 @@ public class ActionPack {
         for (HashMap.Entry<String, Entry> entry : files.entrySet()) {
             Entry value = entry.getValue();
             try {
-                writer.WriteFile(basePath + "/" + value.path, value.diskPath, value.flags);
+                writer.WriteFile(basePath + value.path, value.diskPath, value.flags);
             } catch (IOException e) {
                 System.out.printf("[Error] Failed to write file: %s error: %s",value.path, e.getMessage());
                 return false;

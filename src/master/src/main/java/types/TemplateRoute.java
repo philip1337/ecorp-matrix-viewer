@@ -27,6 +27,15 @@ public class TemplateRoute extends WebRoute {
     }
 
     /**
+     * Content type
+     * @return string
+     */
+    @Override
+    public String GetType() {
+        return "Content-Type: text/html; charset=utf-8";
+    }
+
+    /**
      * Get template
      * @return string
      */
@@ -36,14 +45,14 @@ public class TemplateRoute extends WebRoute {
 
     /**
      * On route initialize
-     * @return
+     * @return true if success
      */
     @Override
     protected boolean OnInit() {
         // Load template
         byte[] data = null;
         try {
-            data = provider_.Get("/" + GetTemplate());
+            data = provider_.Get(GetTemplate());
         } catch (IOException e) {
             return false;
         }

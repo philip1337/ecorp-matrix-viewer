@@ -91,9 +91,6 @@ public class Main extends SimpleApp {
      */
     @Override
     public void OnInit() {
-        // Register services
-        RegisterServices();
-
         // Developer path
         if (IsDev())
             options_.assets_ = "src/master/build/libs/web.big";
@@ -105,6 +102,9 @@ public class Main extends SimpleApp {
             // TODO: Log
             System.out.printf("Failed: %s\n", e.getMessage());
         }
+
+        // Register services
+        RegisterServices();
     }
 
     /**

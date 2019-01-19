@@ -42,7 +42,7 @@ public class ActionValidate {
      * Run (action entry)
      */
     public void Run() {
-        Provider p = new Provider();
+        Provider p = new Provider(false, "");
         try {
             if (!p.RegisterArchive(packPath))
                 System.out.printf("Failed to register archive: %s\n", packPath);
@@ -52,8 +52,7 @@ public class ActionValidate {
         }
 
         try {
-            ArchiveFile file = p.Get(filePath);
-            byte[] buffer = file.Get();
+            byte[] buffer = p.Get(filePath);
 
             try (FileOutputStream fos = new FileOutputStream(filePath)) {
                 fos.write(buffer);

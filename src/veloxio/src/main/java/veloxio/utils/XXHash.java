@@ -35,7 +35,7 @@ public class XXHash {
      * @throws IOException Buffer error
      */
     public long GetPath(String path) throws IOException {
-        ByteArrayInputStream in = new ByteArrayInputStream(path.getBytes("UTF-8"));
+        ByteArrayInputStream in = new ByteArrayInputStream(path.toLowerCase().getBytes("UTF-8"));
 
         // Build hash
         StreamingXXHash64 hash64 = hasher.newStreamingHash64(VeloxConfig.seed);

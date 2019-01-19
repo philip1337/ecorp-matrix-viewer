@@ -16,11 +16,6 @@ public class WebRoute {
     private final String path_;
 
     /**
-     * Resnponse type
-     */
-    public String type_ = "text/plain; charset=UTF-8";
-
-    /**
      * Initialize route
      */
     public Provider provider_ = null;
@@ -33,6 +28,14 @@ public class WebRoute {
     public WebRoute(final HttpMethod method, final String path) {
         this.method_ = method;
         this.path_ = path;
+    }
+
+    /**
+     * Default type
+     * @return content type
+     */
+    public String GetType() {
+        return "text/plain; charset=UTF-8";
     }
 
     /**
