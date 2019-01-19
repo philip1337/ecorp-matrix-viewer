@@ -1,11 +1,10 @@
 package route;
 
 import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpRequest;
-import types.WebRoute;
-import types.WebSession;
+import org.jtwig.JtwigModel;
+import types.TemplateRoute;
 
-public class Index extends WebRoute {
+public class Index extends TemplateRoute {
     /**
      * Constructor
      *
@@ -17,13 +16,21 @@ public class Index extends WebRoute {
     }
 
     /**
-     * Index
-     * @param buffer data
-     * @param request http request
-     * @param session (current request)
+     * Get template path
+     * @return path to the template
      */
     @Override
-    public void Process(StringBuilder buffer, HttpRequest request, WebSession session) {
+    public String GetTemplate() {
+        return "/index.twig";
+    }
 
+    /**
+     * Assign
+     * @param model JtwigModel
+     * @return model
+     */
+    @Override
+    protected JtwigModel Assign(JtwigModel model) {
+        return model;
     }
 }

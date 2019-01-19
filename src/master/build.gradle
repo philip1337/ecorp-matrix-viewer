@@ -16,6 +16,9 @@ dependencies {
 	
     // https://mvnrepository.com/artifact/io.netty/netty-all
     compile group: 'io.netty', name: 'netty-all', version: '4.1.32.Final'
+
+    // Template library
+    compile "org.jtwig:jtwig-core:5.87.0.RELEASE"
 }
 
 jar {

@@ -18,6 +18,7 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import route.*;
+import types.WebRoute;
 import types.WebRouteTable;
 import util.Thread;
 import veloxio.Provider;
@@ -60,8 +61,8 @@ public class WebServerService extends Thread {
         worker_ = new NioEventLoopGroup();
         port_ = port;
 
-        router_ = new WebRouteTable(provider_);
         provider_ = provider;
+        router_ = new WebRouteTable(provider_);
 
         InitializeRoutes();
     }

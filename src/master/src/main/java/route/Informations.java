@@ -2,10 +2,10 @@ package route;
 
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpRequest;
-import types.WebRoute;
+import types.TemplateRoute;
 import types.WebSession;
 
-public class Informations extends WebRoute {
+public class Informations extends TemplateRoute {
     /**
      * Constructor
      *

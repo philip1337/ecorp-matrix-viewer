@@ -21,9 +21,14 @@ public class WebRoute {
     public String type_ = "text/plain; charset=UTF-8";
 
     /**
+     * Initialize route
+     */
+    public Provider provider_ = null;
+
+    /**
      * Constructor
-     * @param method
-     * @param path
+     * @param method http type
+     * @param path request uri
      */
     public WebRoute(final HttpMethod method, final String path) {
         this.method_ = method;
@@ -35,9 +40,12 @@ public class WebRoute {
      * @param provider (veloxio data provider)
      * @return true if route is ready to run
      */
-    public boolean Initialize(Provider provider) {
-        return true;
+    boolean Initialize(Provider provider) {
+        provider_ = provider;
+        return OnInit();
     }
+
+    protected boolean OnInit() {return true;}
 
     /**
      * Get http method
@@ -61,7 +69,7 @@ public class WebRoute {
      * @param path (request uri)
      * @return true if matches
      */
-    public boolean Matches(final HttpMethod method, final String path) {
+    boolean Matches(final HttpMethod method, final String path) {
         return this.method_.equals(method) && this.path_.equals(path);
     }
 
