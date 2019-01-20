@@ -39,6 +39,22 @@ public class Client {
         hostname_ = hostname;
     }
 
+    /**
+     * Get width
+     * @return width of the client
+     */
+    public int GetWidth() {
+        return width_;
+    }
+
+    /**
+     * Get height
+     * @return height of the client
+     */
+    public int GetHeight() {
+        return height_;
+    }
+
 
     /**
      * Get channel
@@ -46,6 +62,17 @@ public class Client {
      */
     public ChannelHandlerContext GetChannel() {
         return ctx_;
+    }
+
+    /**
+     * Write and flush
+     * @param o data
+     */
+    public void Write(int header, Object o) {
+        Message m = new Message();
+        m.header_ = header;
+        m.object_ = o;
+        ctx_.writeAndFlush(m);
     }
 
     /**

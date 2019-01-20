@@ -65,8 +65,7 @@ public class Main extends SimpleApp {
      * Is dev
      * @return true if is running in dev or ide
      */
-    private boolean IsDev()
-    {
+    private boolean IsDev() {
         String classPath = System.getProperty("java.class.path");
         return classPath.contains("idea_rt.jar");
     }
@@ -129,7 +128,7 @@ public class Main extends SimpleApp {
     private void RegisterServices() {
         // Master service
         master_ = new MasterServerService(options_.port_);
-        web_ = new WebServerService(options_.webPort_, provider_);
+        web_ = new WebServerService(options_.webPort_, provider_, master_.GetClients());
 
         // Initialize broadcast service
         try {

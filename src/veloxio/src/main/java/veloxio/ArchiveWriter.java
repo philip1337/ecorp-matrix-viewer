@@ -48,7 +48,7 @@ public class ArchiveWriter {
      * @param path String to the output
      */
     public ArchiveWriter(String path) throws FileNotFoundException {
-        this.files = new HashMap();
+        this.files = new HashMap<>();
         this.path = path;
         this.hasher = new XXHash();
         this.header = new ArchiveHeader();

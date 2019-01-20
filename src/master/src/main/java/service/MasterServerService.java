@@ -61,6 +61,14 @@ public class MasterServerService extends Thread {
     }
 
     /**
+     * Get clients
+     * @return list
+     */
+    public List<Client> GetClients() {
+        return clients_;
+    }
+
+    /**
      * Initialize ssl handler
      * @return
      */

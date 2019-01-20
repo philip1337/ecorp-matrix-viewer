@@ -8,26 +8,14 @@ import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.multipart.*;
 import io.netty.util.CharsetUtil;
 
-import io.netty.util.internal.SystemPropertyUtil;
 import types.WebRouteTable;
 import types.WebSession;
-import veloxio.ArchiveFile;
 import veloxio.Provider;
 
-import javax.activation.MimetypesFileTypeMap;
-import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLConnection;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static io.netty.handler.codec.http.HttpVersion.*;
@@ -169,19 +157,13 @@ public class WebServerHandler extends SimpleChannelInboundHandler<Object> {
         while (s.decoder_.hasNext()) {
             InterfaceHttpData data = s.decoder_.next();
             if (data != null) {
-                try {
-                    switch (data.getHttpDataType()) {
-                        case Attribute:
-                            final Attribute attr = (Attribute) data;
-                            s.AddAttribute(attr);
-                            break;
-                        case FileUpload:
-                            final FileUpload upload = (FileUpload) data;
-                            s.AddFile(upload);
-                            break;
-                    }
-                } finally {
-                    data.release();
+                switch (data.getHttpDataType()) {
+                    case Attribute:
+                        s.AddAttribute((Attribute) data);
+                        break;
+                    case FileUpload:
+                        s.AddFile((FileUpload) data);
+                        break;
                 }
             }
         }

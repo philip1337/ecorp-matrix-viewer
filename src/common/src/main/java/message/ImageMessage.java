@@ -1,7 +1,12 @@
 package message;
 
-import java.awt.image.BufferedImage;
-
 public class ImageMessage implements java.io.Serializable {
-    public BufferedImage image_;
+    public byte[] image_;
+    public String type_;
+
+    public float brightness_;
+    public long duration_;
+    public boolean transpose_;
+
+    public boolean processed_;
 }

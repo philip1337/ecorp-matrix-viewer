@@ -65,6 +65,22 @@ public class WebSession {
     }
 
     /**
+     * Return attributes
+     * @return list
+     */
+    public List<Attribute> GetAttributes() {
+        return attributes_;
+    }
+
+    /**
+     * Return files
+     * @return list
+     */
+    public List<FileUpload> GetFiles() {
+        return files_;
+    }
+
+    /**
      * Add attribute
      * @param attr data
      */

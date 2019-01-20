@@ -9,6 +9,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.Calendar;
 
 public class TemplateRoute extends WebRoute {
     /**
@@ -77,7 +78,8 @@ public class TemplateRoute extends WebRoute {
      * @return model
      */
     protected JtwigModel Assign(JtwigModel model) {
-        return model.with("corp", Config.CORP_NAME);
+        return model.with("corp", Config.CORP_NAME)
+                    .with("year", Calendar.getInstance().get(Calendar.YEAR));
     }
 
     /**
@@ -107,7 +109,7 @@ public class TemplateRoute extends WebRoute {
      * @param request http request
      * @param session (current request)
      */
-    private void ProcessTemplate(OutputStream output, HttpRequest request, WebSession session) {
+    public void ProcessTemplate(OutputStream output, HttpRequest request, WebSession session) {
         template_.render(Assign(JtwigModel.newModel()), output);
     }
 }

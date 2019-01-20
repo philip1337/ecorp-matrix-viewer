@@ -18,6 +18,7 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import route.*;
+import types.Client;
 import types.WebRoute;
 import types.WebRouteTable;
 import util.Thread;
@@ -25,6 +26,7 @@ import veloxio.Provider;
 
 import javax.net.ssl.SSLException;
 import java.security.cert.CertificateException;
+import java.util.List;
 
 public class WebServerService extends Thread {
     /**
@@ -54,13 +56,18 @@ public class WebServerService extends Thread {
     private Provider provider_ = null;
 
     /**
+     * Clients
+     */
+    private List<Client> clients_ = null;
+
+    /**
      * Constructor
      */
-    public WebServerService(int port, Provider provider) {
+    public WebServerService(int port, Provider provider, List<Client> clients) {
         boss_ = new NioEventLoopGroup(1);
         worker_ = new NioEventLoopGroup();
         port_ = port;
-
+        clients_ = clients;
         provider_ = provider;
         router_ = new WebRouteTable(provider_);
 
@@ -73,10 +80,22 @@ public class WebServerService extends Thread {
     private void InitializeRoutes() {
         router_.AddRoute(new Index(HttpMethod.GET, "/"));
         router_.AddRoute(new Informations(HttpMethod.GET, "/informations"));
+        router_.AddRoute(new Upload(HttpMethod.GET, "/upload"));
+        router_.AddRoute(new SelectColor(HttpMethod.GET, "/color"));
+        router_.AddRoute(new Url(HttpMethod.GET, "/url"));
 
-        router_.AddRoute(new Color(HttpMethod.POST, "/action/color"));
-        router_.AddRoute(new Picture(HttpMethod.POST, "/action/picture"));
-        router_.AddRoute(new RemotePicture(HttpMethod.POST, "/action/remote"));
+
+        Color c = new Color(HttpMethod.POST, "/action/color");
+        c.SetClients(clients_);
+        router_.AddRoute(c);
+
+        Picture p = new Picture(HttpMethod.POST, "/action/picture");
+        p.SetClients(clients_);
+        router_.AddRoute(p);
+
+        RemotePicture rp = new RemotePicture(HttpMethod.POST, "/action/remote");
+        rp.SetClients(clients_);
+        router_.AddRoute(rp);
 
         // Backup route
         router_.AddRoute(new NotFound(HttpMethod.GET, "/404"));

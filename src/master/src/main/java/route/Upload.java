@@ -1,19 +1,16 @@
 package route;
 
 import io.netty.handler.codec.http.HttpMethod;
-import io.netty.handler.codec.http.HttpRequest;
 import types.TemplateRoute;
-import types.WebRoute;
-import types.WebSession;
 
-public class NotFound extends TemplateRoute {
+public class Upload extends TemplateRoute {
     /**
      * Constructor
      *
      * @param method
      * @param path
      */
-    public NotFound(HttpMethod method, String path) {
+    public Upload(HttpMethod method, String path) {
         super(method, path);
     }
 
@@ -23,6 +20,6 @@ public class NotFound extends TemplateRoute {
      */
     @Override
     public String GetTemplate() {
-        return "/404.twig";
+        return "/upload.twig";
     }
 }

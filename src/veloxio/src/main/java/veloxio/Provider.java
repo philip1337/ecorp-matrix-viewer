@@ -34,16 +34,22 @@ public class Provider {
      * Constructor
      */
     public Provider(boolean disk, String diskPath) {
-        archives = new HashMap();
+        archives = new HashMap<>();
         loader = new ArchiveLoader();
         disk_ = disk;
         diskPath_ = diskPath;
     }
 
     /**
-     * Sanitize uri
+     * Sanitize uri pattern
      */
     private static final Pattern INSECURE_URI = Pattern.compile(".*[<>&\"].*");
+
+    /**
+     * Path sanitize (sandbox directory)
+     * @param uri previous path
+     * @return new path (absolute)
+     */
     private String Sanitize(String uri) {
         // Decode the path.
         try {
@@ -77,7 +83,7 @@ public class Provider {
      * Register archive
      *
      * @param path to the archive
-     * @return booolean true if it was successfull
+     * @return true if it was successfully
      * @throws FileNotFoundException
      */
     public boolean RegisterArchive(String path) throws FileNotFoundException {
@@ -91,10 +97,7 @@ public class Provider {
                 archives.put(path, a);
                 return true;
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        } catch (IOException e) {}
         return false;
     }
 

@@ -17,10 +17,10 @@ public class Master {
     /**
      * MN = Master -> node
      */
-    public static final byte HEADER_MN_RAW = 3;
+    public static final byte HEADER_MN_IMAGE = 3;
 
     /**
      * MN = Master -> node
      */
-    public static final byte HEADER_MN_IMAGE = 3;
+    public static final byte HEADER_MN_COLOR = 4;
 }

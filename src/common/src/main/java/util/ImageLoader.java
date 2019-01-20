@@ -3,9 +3,7 @@ package util;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 
 public class ImageLoader {
     /**
@@ -23,18 +21,25 @@ public class ImageLoader {
     }
 
     /**
-     * Buffer
-     * @param stream
-     * @param out
-     * @return
+     * Get from buffer
+     * @param buffer byte array
+     * @return image or null
      */
-    public boolean FromBuffer(InputStream stream, BufferedImage out) {
+    public BufferedImage FromBuffer(byte[] buffer) {
+        ByteArrayInputStream stream = new ByteArrayInputStream(buffer);
+        return FromStream(stream);
+    }
+
+    /**
+     * Get image from stream
+     * @param stream input stream
+     * @return image or null
+     */
+    public BufferedImage FromStream(InputStream stream) {
         try {
-            out = ImageIO.read(stream);
-        } catch (IOException e) {
-            return false;
-        }
-        return true;
+            return ImageIO.read(stream);
+        } catch (IOException e) { }
+        return null;
     }
 
     /**
@@ -54,5 +59,35 @@ public class ImageLoader {
         g2d.dispose();
 
         return dimg;
+    }
+
+    /**
+     * Process image
+     * @param i BufferedImage
+     * @param width expected width
+     * @param height expected height
+     * @param type image type png, jpg etc.
+     * @return transport array
+     */
+    public byte[] ProcessImage(BufferedImage i, int width, int height, String type) {
+        // Copy
+        BufferedImage temp = i;
+        byte[] ret = null;
+
+        // Resize client
+        if (i.getHeight() != height || i.getWidth() != width) {
+            temp = Resize(i, height, width);
+        }
+
+        // TODO: Move to utilities
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        try {
+            ImageIO.write(temp, type, stream );
+            stream.flush();
+            ret = stream.toByteArray();
+            stream.close();
+        } catch (IOException ignored) {}
+
+        return ret;
     }
 }
