@@ -1,5 +1,7 @@
 package app;
 
+import fpga.Transmitter;
+import fpga.Types;
 import service.BroadcastService;
 import service.MasterClientService;
 import service.MasterDiscoveryService;
@@ -42,6 +44,11 @@ public class Main extends SimpleApp {
     private MasterClientService master_ = null;
 
     /**
+     * Transmitter
+     */
+    private Transmitter transmitter_ = null;
+
+    /**
      * Entry point
      * @param args commandline
      */
@@ -78,6 +85,9 @@ public class Main extends SimpleApp {
      */
     @Override
     public void OnInit() {
+        // Transmitter
+        transmitter_ = new Transmitter(options_.width_, options_.height_);
+
         // Register services
         try {
             RegisterServices();
@@ -91,6 +101,11 @@ public class Main extends SimpleApp {
      */
     @Override
     public void OnApp() {
+        // Stop cause module is not connected...
+        if (transmitter_.FindModule(options_.device_) != Types.READY) {
+            //return;
+        }
+
         // Register threaded services
         services_.Start();
 
@@ -124,6 +139,9 @@ public class Main extends SimpleApp {
      * Notify
      */
     private void Notify() {
+        // Set transmitter
+        master_.SetTransmitter(transmitter_);
+
         // Not connected
         if (master_ == null)
             return;
@@ -136,9 +154,6 @@ public class Main extends SimpleApp {
      * Master service
      */
     private void RegisterMasterClientService() {
-        // TODO: Remuve debug
-        options_.master_ = "127.0.0.1";
-
         // Append default service
         if (options_.master_.length() > 0) {
             // Register to possible masters
@@ -189,7 +204,7 @@ public class Main extends SimpleApp {
                     // Register a new one
                     masters_.add(CreateService(service.GetHost(), service.GetPort(), service.Reconnect()));
 
-                    // Pause for atleast 6 seconds to avoid reconnects
+                    // Pause for atleast 6 seconds to avoid mass reconnects
                     Thread.sleep(1000 * 6);
 
                     // Remove the old one
@@ -228,7 +243,7 @@ public class Main extends SimpleApp {
     }
 
     /**
-     * Quit
+     * Clean masters
      */
     private void CleanMasters() {
         for (MasterClientService service : masters_) {

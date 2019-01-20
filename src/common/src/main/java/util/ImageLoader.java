@@ -97,6 +97,26 @@ public class ImageLoader {
      * @param i BufferedImage
      * @param width expected width
      * @param height expected height
+     * @return image buffer
+     */
+    public BufferedImage ProcessImage(BufferedImage i, int width, int height) {
+        // Copy
+        BufferedImage temp = i;
+        byte[] ret = null;
+
+        // Resize client
+        if (i.getHeight() != height || i.getWidth() != width) {
+            temp = Resize(i, height, width);
+        }
+
+        return temp;
+    }
+
+    /**
+     * Process image
+     * @param i BufferedImage
+     * @param width expected width
+     * @param height expected height
      * @param type image type png, jpg etc.
      * @return transport array
      */
@@ -110,7 +130,6 @@ public class ImageLoader {
             temp = Resize(i, height, width);
         }
 
-        // TODO: Move to utilities
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         try {
             ImageIO.write(temp, type, stream );

@@ -14,11 +14,31 @@ public class Transmitter {
      */
     private SerialPort port_ = null;
 
+    private int width_;
+    private int height_;
+
     /**
      * Constructor
      */
-    public Transmitter() {
+    public Transmitter(int width, int height) {
+        width_ = width;
+        height_ = height;
+    }
 
+    /**
+     * Get width
+     * @return int
+     */
+    public int GetWidth() {
+        return width_;
+    }
+
+    /**
+     * Get height
+     * @return int
+     */
+    public int GetHeight() {
+        return height_;
     }
 
     /**
@@ -183,7 +203,7 @@ public class Transmitter {
             // Write second block of 8 pixels a 3 bytes
             o.write(String.format("<%02X", y * 2 + 2).getBytes());
             if (readFromBeginning) {
-                for (int x = 8; x < 16; ++x) {
+                for (int x = 8; x < width; ++x) {
                     final Color c = new Color(img.getRGB(x, y));
                     c.SetBrightness(brightness);
                     o.write(c.ToBytes());
@@ -193,6 +213,62 @@ public class Transmitter {
                     final Color c = new Color(img.getRGB(x, y));
                     c.SetBrightness(brightness);
                     o.write(c.ToBytes());
+                }
+            }
+            o.write(">".getBytes());
+        }
+
+        o.flush();
+    }
+
+    /**
+     * Transmit color pixels
+     * @param color color
+     * @param brightness float 1 = max
+     * @throws IOException if comport is failing
+     */
+    public void TransmitColor(Color color, float brightness) throws IOException {
+        assert port_ != null : "No port found";
+
+        // Output stream
+        OutputStream o = port_.getOutputStream();
+        if (o == null)
+            return;
+
+        // Translate image
+        int height = 16;
+        int width = 16;
+
+        // Loop trough stuff
+        for (int y = 0; y < height; y++) {
+            final boolean readFromBeginning = y % 2 == 0;
+
+            // Write first block of 8 pixels a 3 bytes
+            o.write(String.format("<%02X", y * 2 + 1).getBytes());
+            if (readFromBeginning) {
+                for (int x = 0; x < 8; ++x) {
+                    color.SetBrightness(brightness);
+                    o.write(color.ToBytes());
+                }
+            } else {
+                for (int x = 16 - 1; x >= 8; --x) {
+                    color.SetBrightness(brightness);
+                    o.write(color.ToBytes());
+                }
+            }
+            o.write(">".getBytes());
+
+            // Write second block of 8 pixels a 3 bytes
+            o.write(String.format("<%02X", y * 2 + 2).getBytes());
+            if (readFromBeginning) {
+                for (int x = 8; x < width; ++x) {
+                    color.SetBrightness(brightness);
+                    o.write(color.ToBytes());
+                }
+            } else {
+                for (int x = 8 - 1; x >= 0; --x) {
+                    color.SetBrightness(brightness);
+                    o.write(color.ToBytes());
                 }
             }
             o.write(">".getBytes());

@@ -11,7 +11,7 @@ public class Options {
     public String config_ = "config.properties";
 
     @CommandLine.Option(names = { "-m", "--master" }, description = "Master server IP address.")
-    public String master_ = "";
+    public String master_ = "127.0.0.1";
 
     @CommandLine.Option(names = { "-p", "--port" }, description = "Master server port.")
     public int port_ = 50000;

@@ -1,5 +1,7 @@
 package net;
 
+import fpga.DisplayService;
+import fpga.Transmitter;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import message.ColorMessage;
@@ -7,6 +9,7 @@ import message.EhloMessage;
 import message.ImageMessage;
 import message.Message;
 import types.Master;
+import util.Color;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,11 +22,29 @@ public class MasterClientHandler extends ChannelInboundHandlerAdapter {
     private List<ChannelHandlerContext> channels_ = null;
 
     /**
+     * Transmitter
+     */
+    private Transmitter transmitter_ = null;
+
+    /**
+     * Display service
+     */
+    private DisplayService display_ = null;
+
+    /**
     * Creates a client-side handler.
     */
     public MasterClientHandler() {
         // Clear list
         channels_ = Collections.synchronizedList(new ArrayList<>());
+    }
+
+    /**
+     * Set transmitter
+     * @param transmitter transmitter
+     */
+    public void SetTransmitter(Transmitter transmitter) {
+        transmitter_ = transmitter;
     }
 
     /**
@@ -33,6 +54,21 @@ public class MasterClientHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         channels_.add(ctx);
+    }
+
+    /**
+     * Stop display
+     */
+    private void StopDisplay() {
+        // Wait till old display is done
+        if (display_ != null) {
+            display_.StopDisplay();
+            try {
+                display_.join();
+            } catch (InterruptedException e) {
+                display_ = null;
+            }
+        }
     }
 
     /**
@@ -53,16 +89,26 @@ public class MasterClientHandler extends ChannelInboundHandlerAdapter {
                 break;
 
             case Master.HEADER_MN_IMAGE:
+                // Make sure we have no running display
+                StopDisplay();
+
+                // Setup display service
                 ImageMessage i = (ImageMessage)message.object_;
-                if (i.processed_) {
-
-                } else {
-
-                }
+                display_ = new DisplayService(transmitter_, i.duration_, i.brightness_);
+                display_.SetFramesFromBuffer(i.image_, !i.processed_);
+                display_.Start();
                 break;
 
             case Master.HEADER_MN_COLOR:
+                // Make sure we have no running display
+                StopDisplay();
+
                 ColorMessage c = (ColorMessage)message.object_;
+
+                // Setup display service
+                display_ = new DisplayService(transmitter_, c.duration_, c.brightness_);
+                display_.SetColor(c.r_, c.g_, c.b_);
+                display_.Start();
                 break;
 
             default:

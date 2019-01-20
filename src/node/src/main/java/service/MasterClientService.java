@@ -1,5 +1,6 @@
 package service;
 
+import fpga.Transmitter;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -62,6 +63,11 @@ public class MasterClientService extends Thread {
      * Reconnect state
      */
     private AtomicBoolean reconnect_ = new AtomicBoolean(false);
+
+    /**
+     * FPGA Transmitter
+     */
+    private Transmitter transmitter_ = null;
 
     /**
      * Constructor
@@ -133,6 +139,15 @@ public class MasterClientService extends Thread {
      */
     public MasterClientHandler GetHandler() {
         return handler_;
+    }
+
+    /**
+     * Set transmitter
+     * @param transmitter transmitter
+     */
+    public void SetTransmitter(Transmitter transmitter) {
+        transmitter_ = transmitter;
+        handler_.SetTransmitter(transmitter_);
     }
 
     /**
