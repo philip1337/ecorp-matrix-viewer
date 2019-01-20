@@ -94,9 +94,14 @@ public class Main extends SimpleApp {
         }
 
         // Mime type not found
-        if (mimeType == null || !mimeType.equals("image/gif")) {
-            System.out.printf("[Error] Failed to read image: %s. \n" , f.getAbsolutePath());
-
+        if (mimeType != null &&mimeType.equals("image/gif")){
+            try {
+                service.SetFrames(loader.GetFrames(f), true, options_.aspectRatio_);
+            } catch (IOException e) {
+                System.out.printf("[Error] Failed to read frames: %s. \n" , f.getAbsolutePath());
+                return;
+            }
+        } else {
             // Load image from file
             BufferedImage image = loader.FromFile(f);
 
@@ -107,13 +112,6 @@ public class Main extends SimpleApp {
             }
 
             service.AddFrame(image, true, options_.aspectRatio_);
-        } else if (mimeType.equals("image/gif")){
-            try {
-                service.SetFrames(loader.GetFrames(f), true, options_.aspectRatio_);
-            } catch (IOException e) {
-                System.out.printf("[Error] Failed to read frames: %s. \n" , f.getAbsolutePath());
-                return;
-            }
         }
 
         // Start service
