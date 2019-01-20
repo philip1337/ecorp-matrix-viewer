@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<Archive>
+	<!-- Assets -->
+	<File path="/assets/css/bootstrap.min.css" diskPath="assets/css/bootstrap.min.css" flags="COMPRESS | CRYPT"/>
+	<File path="/assets/css/bootstrap-colorpicker.min.css" diskPath="assets/css/bootstrap-colorpicker.min.css" flags="COMPRESS | CRYPT"/>
+	<File path="/assets/css/bootstrap.min.js" diskPath="assets/js/bootstrap.min.js" flags="COMPRESS | CRYPT"/>
+	<File path="/assets/css/bootstrap-colorpicker.min.js" diskPath="assets/js/bootstrap-colorpicker.min.js" flags="COMPRESS | CRYPT"/>
+	<File path="/assets/css/jquery.js" diskPath="assets/js/jquery.js" flags="COMPRESS | CRYPT"/>
+	<File path="/assets/css/popper.js" diskPath="assets/js/popper.js" flags="COMPRESS | CRYPT"/>
+	
+	<!-- Assets: images -->
+	<File path="/assets/images/logo.gif" diskPath="assets/images/logo.gif" flags="COMPRESS | CRYPT"/>
+	<File path="/assets/images/notfound.jpg" diskPath="assets/images/notfound.jpg" flags="COMPRESS | CRYPT"/>
+	<File path="/assets/img/bootstrap-colorpicker/alpha.png" diskPath="assets/img/bootstrap-colorpicker/alpha.png" flags="COMPRESS | CRYPT"/>
+	<File path="/assets/img/bootstrap-colorpicker/alpha-horizontal.png" diskPath="assets/img/bootstrap-colorpicker/alpha-horizontal.png" flags="COMPRESS | CRYPT"/>
+	<File path="/assets/img/bootstrap-colorpicker/hue.png" diskPath="assets/img/bootstrap-colorpicker/hue.png" flags="COMPRESS | CRYPT"/>
+	<File path="/assets/img/bootstrap-colorpicker/hue-horizontal.png" diskPath="assets/img/bootstrap-colorpicker/hue-horizontal.png" flags="COMPRESS | CRYPT"/>
+	<File path="/assets/img/bootstrap-colorpicker/saturation.png" diskPath="assets/img/bootstrap-colorpicker/saturation.png" flags="COMPRESS | CRYPT"/>
+	
+	<!-- Template files -->
+	<File path="/index.twig" diskPath="index.twig" flags="COMPRESS | CRYPT" />
+	<File path="/404.twig" diskPath="404.twig" flags="COMPRESS | CRYPT" />
+	<File path="/color.twig" diskPath="color.twig" flags="COMPRESS | CRYPT" />
+	<File path="/message.twig" diskPath="message.twig" flags="COMPRESS | CRYPT" />
+	<File path="/upload.twig" diskPath="upload.twig" flags="COMPRESS | CRYPT" />
+	<File path="/url.twig" diskPath="url.twig" flags="COMPRESS | CRYPT" />
+	
+	<!-- Favicon -->
+	<File path="/favicon.ico" diskPath="favicon.ico" flags="COMPRESS | CRYPT" />
+</Archive>

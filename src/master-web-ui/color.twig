@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="/favicon.ico">
+
+    <title>{{ corp }}</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/assets/css/bootstrap-colorpicker.min.css" rel="stylesheet">
+</head>
+
+<body>
+<!-- Navigation -->
+<div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm">
+    <h5 class="my-0 mr-md-auto font-weight-normal">{{ corp }}</h5>
+    <nav class="my-2 my-md-0 mr-md-3">
+        <a class="p-2 text-dark" href="/">Home</a>
+        <a class="p-2 text-dark" href="/upload">Upload</a>
+        <a class="p-2 text-dark" href="/color">Color</a>
+        <a class="p-2 text-dark" href="/url">Url</a>
+    </nav>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="mx-auto d-block">
+            <form action="/action/color" autocomplete="off" method="post" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="colorInput">Color</label>
+                    <input name="color" type="text" class="form-control" id="colorInput" value=""
+                           aria-describedby="colorInputHelp" required>
+                    <small id="colorInputHelp" class="form-text text-muted">Color</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="brightnessInput">Brightness</label>
+                    <input name="brightness" type="number" class="form-control" id="brightnessInput"
+                           min="0" value="0.3" step=".01"
+                           aria-describedby="brightnessHelp">
+                    <small id="brightnessHelp" class="form-text text-muted">Brightness from (0.1 - 1.0)</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="durationInput">Duration</label>
+                    <input name="duration" type="number" class="form-control" id="durationInput" value="0"
+                           aria-describedby="durationInputHelp">
+                    <small id="durationInputHelp" class="form-text text-muted">Duration in seconds(0 = Permanent)
+                    </small>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <footer class="pt-4 my-md-5 pt-md-5 border-top">
+        <div class="row">
+            <div class="col-12 col-md">
+                <small class="d-block mb-3 text-muted">&copy; {{ year }}</small>
+            </div>
+            <div class="col-6 col-md">
+                <h5>Other</h5>
+                <ul class="list-unstyled text-small">
+                    <li><a class="text-muted" href="https://abbts.ch/">ABB Technikerschule</a></li>
+                    <li><a class="text-muted" href="https://abbts.ch/Bildungsgaenge/Informatik-HF">Informatik HF (IS
+                            3.1)</a></li>
+                </ul>
+            </div>
+        </div>
+    </footer>
+</div>
+
+
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="/assets/js/jquery.js"></script>
+<script src="/assets/js/popper.js"></script>
+<script src="/assets/js/bootstrap.min.js"></script>
+<script src="/assets/js/bootstrap-colorpicker.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#colorInput').colorpicker();
+    });
+</script>
+</body>
+</html>
