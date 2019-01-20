@@ -2,7 +2,9 @@ package net;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import message.ColorMessage;
 import message.EhloMessage;
+import message.ImageMessage;
 import message.Message;
 import types.Master;
 
@@ -51,6 +53,16 @@ public class MasterClientHandler extends ChannelInboundHandlerAdapter {
                 break;
 
             case Master.HEADER_MN_IMAGE:
+                ImageMessage i = (ImageMessage)message.object_;
+                if (i.processed_) {
+
+                } else {
+
+                }
+                break;
+
+            case Master.HEADER_MN_COLOR:
+                ColorMessage c = (ColorMessage)message.object_;
                 break;
 
             default:

@@ -1,9 +1,14 @@
 package util;
 
+import com.sun.imageio.plugins.gif.GIFImageReader;
+import com.sun.imageio.plugins.gif.GIFImageReaderSpi;
+
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.util.ArrayList;
 
 public class ImageLoader {
     /**
@@ -40,6 +45,32 @@ public class ImageLoader {
             return ImageIO.read(stream);
         } catch (IOException e) { }
         return null;
+    }
+
+    /**
+     * Input stream
+     * @param buffer file
+     * @return frames
+     * @throws IOException if read failes
+     */
+    public ArrayList<BufferedImage> GetFrames(byte[] buffer) throws IOException{
+        ByteArrayInputStream stream = new ByteArrayInputStream(buffer);
+        return GetFrames(stream);
+    }
+
+    /**
+     * Input stream
+     * @param stream file
+     * @return frames
+     * @throws IOException if read failes
+     */
+    public ArrayList<BufferedImage> GetFrames(InputStream stream) throws IOException{
+        ArrayList<BufferedImage> frames = new ArrayList<>();
+        ImageReader ir = new GIFImageReader(new GIFImageReaderSpi());
+        ir.setInput(ImageIO.createImageInputStream(stream));
+        for(int i = 0; i < ir.getNumImages(true); i++)
+            frames.add(ir.getRawImageType(i).createBufferedImage(ir.getWidth(i), ir.getHeight(i)));
+        return frames;
     }
 
     /**

@@ -8,11 +8,10 @@ import message.ImageMessage;
 import types.*;
 import util.ImageLoader;
 
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Picture extends MessageRoute {
@@ -111,38 +110,60 @@ public class Picture extends MessageRoute {
             return msg;
         }
 
-        // Get buffered image
-        BufferedImage i = null;
-        ImageLoader loader = new ImageLoader();
-        i = loader.FromBuffer(imageBuffer);
-        if (i == null) {
-            msg.message_ = "Error: File is not an image.";
-            msg.type_ = "danger";
-            return msg;
-        }
-
         // File type
         m.type_ = file.getContentType();
 
+        // Get buffered image
+        ImageLoader loader = new ImageLoader();
+        List<BufferedImage> frames = new ArrayList<>();
+
+        // Differ between gif and normal image
+        if (m.type_.equals("image/gif")) {
+            try {
+                frames = loader.GetFrames(imageBuffer);
+            } catch (IOException e) {
+                msg.message_ = "Error: File is not an image.";
+                msg.type_ = "danger";
+                return msg;
+            }
+        } else {
+            // Get buffered image
+            BufferedImage temp = loader.FromBuffer(imageBuffer);
+            if (temp == null) {
+                msg.message_ = "Error: File is not an image.";
+                msg.type_ = "danger";
+                return msg;
+            }
+
+            // Add to frame list
+            frames.add(temp);
+        }
+
         // Clients
         for(Client client : clients_) {
-            BufferedImage temp = i;
-            if (processLocal) {
-                m.image_ = loader.ProcessImage(i, client.GetWidth(), client.GetHeight(), m.type_);
+            // Clean list
+            m.image_.clear();
 
-                // Done, just display it
-                m.processed_ = true;
-            } else {
-                m.image_ = imageBuffer;
+            // Process
+            for(BufferedImage i : frames) {
+                if (processLocal) {
+                    m.image_.add(loader.ProcessImage(i, client.GetWidth(), client.GetHeight(), m.type_));
 
-                // Not ready, process on node
-                m.processed_ = false;
+                    // Done, just display it
+                    m.processed_ = true;
+                } else {
+                    m.image_.add(imageBuffer);
+
+                    // Not ready, process on node
+                    m.processed_ = false;
+                }
             }
 
             // Transfer
             client.Write(Master.HEADER_MN_IMAGE, m);
         }
 
+        // Answer
         msg.message_ = "OK";
         msg.type_ = "success";
         return msg;

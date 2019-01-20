@@ -1,7 +1,10 @@
 package message;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ImageMessage implements java.io.Serializable {
-    public byte[] image_;
+    public List<byte[]> image_ = new ArrayList<>();
     public String type_;
 
     public float brightness_;

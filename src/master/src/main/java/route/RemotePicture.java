@@ -21,6 +21,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.ArrayList;
 import java.util.List;
 
 public class RemotePicture extends MessageRoute {
@@ -142,35 +143,67 @@ public class RemotePicture extends MessageRoute {
             return msg;
         }
 
-        // Try to load it
-        ImageLoader loader = new ImageLoader();
-        BufferedImage i = loader.FromBuffer(data.toByteArray());
-        if (i == null) {
-            msg.message_ = "Error: Given image is invalid!";
+        // Get mime type from byte array
+        InputStream is = new BufferedInputStream(new ByteArrayInputStream(data.toByteArray()));
+        try {
+            m.type_ = URLConnection.guessContentTypeFromStream(is);
+        } catch (IOException e) {
+            msg.message_ = "Error: Invalid file format, error message: " + e.getMessage();
             msg.type_ = "danger";
             return msg;
         }
 
-        // Get mime type from byte array
-        InputStream is = new BufferedInputStream(new ByteArrayInputStream(data.toByteArray()));
-        try {
-            msg.type_ = URLConnection.guessContentTypeFromStream(is);
-        } catch (IOException e) {
-            msg.type_ = "image/jpg";
+        // We can't get the type so we upload it manually
+        if (m.type_ == null) {
+            msg.message_ = "Error: Remote (web scrapping) not supported for that image, please upload it manually.";
+            msg.type_ = "danger";
+            return msg;
         }
 
-        // Loop trough clients
-        for (Client client : clients_) {
-            if (processLocal) {
-                m.image_ = loader.ProcessImage(i, client.GetWidth(), client.GetHeight(), m.type_);
+        // Get buffered image
+        ImageLoader loader = new ImageLoader();
+        List<BufferedImage> frames = new ArrayList<>();
 
-                // Done, just display it
-                m.processed_ = true;
-            } else {
-                m.image_ = data.toByteArray();
+        // Differ between gif and normal image
+        if (m.type_.equals("image/gif")) {
+            try {
+                frames = loader.GetFrames(data.toByteArray());
+            } catch (IOException e) {
+                msg.message_ = "Error: File is not an image.";
+                msg.type_ = "danger";
+                return msg;
+            }
+        } else {
+            // Get buffered image
+            BufferedImage temp = loader.FromBuffer(data.toByteArray());
+            if (temp == null) {
+                msg.message_ = "Error: File is not an image.";
+                msg.type_ = "danger";
+                return msg;
+            }
 
-                // Not ready, process on node
-                m.processed_ = false;
+            // Add to frame list
+            frames.add(temp);
+        }
+
+        // Clients
+        for(Client client : clients_) {
+            // Clean list
+            m.image_.clear();
+
+            // Process
+            for(BufferedImage i : frames) {
+                if (processLocal) {
+                    m.image_.add(loader.ProcessImage(i, client.GetWidth(), client.GetHeight(), m.type_));
+
+                    // Done, just display it
+                    m.processed_ = true;
+                } else {
+                    m.image_.add(data.toByteArray());
+
+                    // Not ready, process on node
+                    m.processed_ = false;
+                }
             }
 
             // Transfer
