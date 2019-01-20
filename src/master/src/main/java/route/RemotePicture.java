@@ -69,14 +69,11 @@ public class RemotePicture extends MessageRoute {
         if (clients_.size() == 0) {
             msg.message_ = "Error: There are no nodes registered currently, please try again later.";
             msg.type_ = "danger";
-            //return msg;
+            return msg;
         }
 
         // Message
-        boolean transpose = false;
         String url = "";
-        float brightness = 0.3f;    // Default
-        long duration = 0;
         for(Attribute a : session.GetAttributes()) {
             switch(a.getName()) {
                 case "processLocal":
@@ -210,7 +207,7 @@ public class RemotePicture extends MessageRoute {
             client.Write(Master.HEADER_MN_IMAGE, m);
         }
 
-        msg.message_ = "OK";
+        msg.message_ = "Image transferred to the display.";
         msg.type_ = "success";
         return msg;
     }

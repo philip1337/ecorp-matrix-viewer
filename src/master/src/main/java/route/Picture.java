@@ -54,7 +54,7 @@ public class Picture extends MessageRoute {
         if (clients_.size() == 0) {
             msg.message_ = "Error: There are no nodes registered currently, please try again later.";
             msg.type_ = "danger";
-            //return msg;
+            return msg;
         }
 
         // Invalid file upload
@@ -164,7 +164,7 @@ public class Picture extends MessageRoute {
         }
 
         // Answer
-        msg.message_ = "OK";
+        msg.message_ = "Image transferred to the display.";
         msg.type_ = "success";
         return msg;
     }
