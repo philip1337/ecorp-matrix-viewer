@@ -43,6 +43,9 @@ public class ArchiveFile {
      * @return byte array (containing the buffer)
      */
     private byte[] GetFromContainer() throws IOException {
+        // Lock
+        //this.archive.Lock();
+
         Stream stream = this.archive.GetHandle();
 
         // Set offset
@@ -54,6 +57,8 @@ public class ArchiveFile {
         if (read != this.entry.size)
             throw new IOException("Failed to read file from archive: " + archive.GetPath());
 
+        // Unlock
+        //this.archive.Unlock();
         return buffer;
     }
 

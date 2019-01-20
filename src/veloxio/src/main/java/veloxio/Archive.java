@@ -4,6 +4,7 @@ import veloxio.utils.Stream;
 
 import java.io.FileNotFoundException;
 import java.util.HashMap;
+import java.util.concurrent.Semaphore;
 
 class Archive {
     /**
@@ -27,12 +28,33 @@ class Archive {
     private ArchiveHeader header;
 
     /**
+     * Mutex
+     */
+    private Semaphore mutex_ = new Semaphore(0);
+
+    /**
      * Archive constructor
      */
     public Archive(String path) throws FileNotFoundException {
-        this.files = new HashMap();
+        this.files = new HashMap<>();
         this.path = path;
         this.handle = new Stream(path);
+    }
+
+    /**
+     * Lock
+     */
+    public void Lock() {
+        try {
+            mutex_.acquire();
+        } catch (InterruptedException e) {}
+    }
+
+    /**
+     * Unlock
+     */
+    public void Unlock() {
+        mutex_.release();
     }
 
     /**

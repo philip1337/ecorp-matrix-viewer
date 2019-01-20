@@ -7,6 +7,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.util.HashMap;
+import java.util.concurrent.Semaphore;
 import java.util.regex.Pattern;
 
 public class Provider {
@@ -29,6 +30,11 @@ public class Provider {
      * Disk path
      */
     private String diskPath_ = "";
+
+    /**
+     * Mutex
+     */
+    private Semaphore mutex_ = new Semaphore(1);
 
     /**
      * Constructor
@@ -120,13 +126,25 @@ public class Provider {
             }
         }
 
-        long hashedPath = loader.GetHasher().GetPath(path);
-        for (HashMap.Entry<String, Archive> entry : archives.entrySet()) {
-            Archive archive = entry.getValue();
-            if (archive.HasFile(hashedPath)) {
-                return new ArchiveFile(archive, archive.GetEntry(hashedPath), path).Get();
+        // Lock
+        try {
+            mutex_.acquire();
+            long hashedPath = loader.GetHasher().GetPath(path);
+            for (HashMap.Entry<String, Archive> entry : archives.entrySet()) {
+                Archive archive = entry.getValue();
+                if (archive.HasFile(hashedPath)) {
+                    ArchiveEntry e = archive.GetEntry(hashedPath);
+                    byte[] ret = new ArchiveFile(archive, e, path).Get();
+                    mutex_.release();    // Unlock mutex
+                    return ret;
+                }
             }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
+
+        // Release base
+        mutex_.release();
 
         // If our vfs provider do not own the file we just return an exception
         throw new IOException("File not found: " + path);
