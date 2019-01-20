@@ -19,8 +19,11 @@ public class Options {
     @CommandLine.Option(names = { "-y", "--height" }, description = "Height of the matrix (y, default: 16).")
     public int height_ = 16;
 
+    @CommandLine.Option(names = { "-s", "--s" }, description = "Service duration in seconds (default: 0 = permanent).")
+    public long duration_ = 0;
+
     @CommandLine.Option(names = { "-p", "--picture" }, description = "Picture to display on the matrix.")
-    public String picture_ = "test.png";
+    public String picture_ = "test.jpg";
 
     @CommandLine.Option(names = { "-d", "--device" }, description = "Select matrix device endpoint.")
     public String device_ = "cu.usbserial-16";

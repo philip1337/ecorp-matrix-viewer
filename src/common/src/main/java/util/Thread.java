@@ -12,4 +12,8 @@ public abstract class Thread extends java.lang.Thread {
     public void Wait() throws InterruptedException {
         wait();
     }
+
+    public void Join() throws InterruptedException {
+        join();
+    }
 }

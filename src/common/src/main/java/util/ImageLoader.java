@@ -48,10 +48,25 @@ public class ImageLoader {
     }
 
     /**
+     * Get frames
+     * @param gif file
+     * @return frames
+     * @throws IOException if read fails
+     */
+    public ArrayList<BufferedImage> GetFrames(File gif) throws IOException{
+        ArrayList<BufferedImage> frames = new ArrayList<BufferedImage>();
+        ImageReader ir = new GIFImageReader(new GIFImageReaderSpi());
+        ir.setInput(ImageIO.createImageInputStream(gif));
+        for(int i = 0; i < ir.getNumImages(true); i++)
+            frames.add(ir.getRawImageType(i).createBufferedImage(ir.getWidth(i), ir.getHeight(i)));
+        return frames;
+    }
+
+    /**
      * Input stream
      * @param buffer file
      * @return frames
-     * @throws IOException if read failes
+     * @throws IOException if read fails
      */
     public ArrayList<BufferedImage> GetFrames(byte[] buffer) throws IOException{
         ByteArrayInputStream stream = new ByteArrayInputStream(buffer);
@@ -62,7 +77,7 @@ public class ImageLoader {
      * Input stream
      * @param stream file
      * @return frames
-     * @throws IOException if read failes
+     * @throws IOException if read fails
      */
     public ArrayList<BufferedImage> GetFrames(InputStream stream) throws IOException{
         ArrayList<BufferedImage> frames = new ArrayList<>();

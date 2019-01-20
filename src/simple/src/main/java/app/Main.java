@@ -1,13 +1,15 @@
 package app;
 
+import fpga.DisplayService;
 import fpga.Transmitter;
 import fpga.Types;
 import util.ImageLoader;
 import util.SimpleApp;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.net.URLConnection;
+import java.util.List;
 
 public class Main extends SimpleApp {
     /**
@@ -34,7 +36,7 @@ public class Main extends SimpleApp {
 
     /**
      * Get options
-     * @return
+     * @return options
      */
     @Override
     public Object GetOptions() {
@@ -46,8 +48,14 @@ public class Main extends SimpleApp {
      */
     @Override
     public void OnApp() {
+        // TODO: TransmitImage should support != 16x16
+        if (options_.width_ != 16 || options_.height_ != 16) {
+            System.out.println("[Error] We just support 16x16 currently.");
+            return;
+        }
+
         // Transmitter
-        Transmitter t = new Transmitter();
+        Transmitter t = new Transmitter(options_.width_, options_.height_);
 
         // Show devices
         if (options_.showDevices_) {
@@ -59,11 +67,14 @@ public class Main extends SimpleApp {
         byte ret = t.FindModule(options_.device_);
         if (ret != Types.READY) {
             System.out.printf("[Error] Failed to initialize matrix error code: %d. \n", ret);
-            return;
+            //return;
         }
 
-        // Image buffer
-        BufferedImage image = null;
+        // Display service
+        DisplayService service = new DisplayService(t, options_.duration_, options_.brightness_);
+
+        // Image loader
+        ImageLoader loader = new ImageLoader();
 
         // Get image
         File f = new File(options_.picture_);
@@ -72,37 +83,46 @@ public class Main extends SimpleApp {
             return;
         }
 
-        // Image loader
-        ImageLoader i = new ImageLoader();
-
-        // Load image from file
-        image = i.FromFile(f);
-
-        // Image failed
-        if (image == null) {
-            System.out.printf("[Error] Failed to read image: %s. \n" , f.getAbsolutePath());
-            return;
-        }
-
-        // TODO: TransmitImage should support != 16x16
-        if (options_.width_ != 16 || options_.height_ != 16) {
-            System.out.println("[Warning] We just support 16x16 currently, skipping transmission.");
-            return;
-        }
-
-        // Transmit image to matrix
+        InputStream is;
+        String mimeType = null;
         try {
-            // Info message
-            System.out.printf("[Info] Brightness: %f Size: %dx%d - picture: %s \n",
-                              options_.brightness_, options_.width_, options_.height_, f.getAbsolutePath());
-
-            // Resize image
-            image = i.Resize(image, options_.width_, options_.height_);
-
-            // Transmit
-            t.TransmitImage(image, options_.brightness_);
+            is = new BufferedInputStream(new FileInputStream(f));
+            mimeType = URLConnection.guessContentTypeFromStream(is);
         } catch (IOException e) {
-            System.out.printf("[Error] Failed to transmit image error message: %s \n", e.getMessage());
+            e.printStackTrace();
+        }
+
+        // Mime type not found
+        if (mimeType == null || !mimeType.equals("image/gif")) {
+            System.out.printf("[Error] Failed to read image: %s. \n" , f.getAbsolutePath());
+
+            // Load image from file
+            BufferedImage image = loader.FromFile(f);
+
+            // Image failed
+            if (image == null) {
+                System.out.printf("[Error] Failed to read image: %s. \n" , f.getAbsolutePath());
+                return;
+            }
+
+            service.AddFrame(image, true);
+        } else if (mimeType.equals("image/gif")){
+            try {
+                service.SetFrames(loader.GetFrames(f), true);
+            } catch (IOException e) {
+                System.out.printf("[Error] Failed to read frames: %s. \n" , f.getAbsolutePath());
+                return;
+            }
+        }
+
+        // Start service
+        service.Start();
+
+        // Wait till we're done
+        try {
+            service.Join();
+        } catch (InterruptedException e) {
+            // Silent exit
         }
     }
 }
