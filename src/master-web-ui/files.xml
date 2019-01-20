@@ -3,8 +3,10 @@
 	<!-- Assets -->
 	<File path="/assets/css/bootstrap.min.css" diskPath="assets/css/bootstrap.min.css" flags="COMPRESS | CRYPT"/>
 	<File path="/assets/css/bootstrap-colorpicker.min.css" diskPath="assets/css/bootstrap-colorpicker.min.css" flags="COMPRESS | CRYPT"/>
-	<File path="/assets/css/bootstrap.min.js" diskPath="assets/js/bootstrap.min.js" flags="COMPRESS | CRYPT"/>
-	<File path="/assets/css/bootstrap-colorpicker.min.js" diskPath="assets/js/bootstrap-colorpicker.min.js" flags="COMPRESS | CRYPT"/>
+	<File path="/assets/js/jquery.js" diskPath="assets/js/jquery.js" flags="COMPRESS | CRYPT"/>
+	<File path="/assets/js/popper.js" diskPath="assets/js/popper.js" flags="COMPRESS | CRYPT"/>
+	<File path="/assets/js/bootstrap.min.js" diskPath="assets/js/bootstrap.min.js" flags="COMPRESS | CRYPT"/>
+	<File path="/assets/js/bootstrap-colorpicker.min.js" diskPath="assets/js/bootstrap-colorpicker.min.js" flags="COMPRESS | CRYPT"/>
 	<File path="/assets/css/jquery.js" diskPath="assets/js/jquery.js" flags="COMPRESS | CRYPT"/>
 	<File path="/assets/css/popper.js" diskPath="assets/js/popper.js" flags="COMPRESS | CRYPT"/>
 	
