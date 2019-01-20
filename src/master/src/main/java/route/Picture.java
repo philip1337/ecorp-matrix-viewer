@@ -9,8 +9,9 @@ import types.*;
 import util.ImageLoader;
 
 import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -54,7 +55,7 @@ public class Picture extends MessageRoute {
         if (clients_.size() == 0) {
             msg.message_ = "Error: There are no nodes registered currently, please try again later.";
             msg.type_ = "danger";
-            return msg;
+            //return msg;
         }
 
         // Invalid file upload
@@ -67,6 +68,7 @@ public class Picture extends MessageRoute {
         // Image message
         ImageMessage m = new ImageMessage();
         boolean processLocal = false;
+        boolean storeImage = false;
         for(Attribute a : session.GetAttributes()) {
             switch(a.getName()) {
                 case "processLocal":
@@ -75,6 +77,10 @@ public class Picture extends MessageRoute {
 
                 case "transpose":
                     m.transpose_ = true;
+                    break;
+
+                case "storeImage":
+                    storeImage = true;
                     break;
 
                 case "aspectRatio":
@@ -120,6 +126,25 @@ public class Picture extends MessageRoute {
             msg.message_ = "Error: Invalid file upload with message: " + e.getMessage();
             msg.type_ = "danger";
             return msg;
+        }
+
+        // Store image
+        if (storeImage) {
+            SimpleDateFormat df = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
+            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+            String cachePath = Config.CACHE_FOLDER + df.format(timestamp) + " - " + file.getFilename();
+
+            // Cache path
+            File cacheFile = new File(cachePath);
+            cacheFile.getParentFile().mkdirs();
+
+            try (FileOutputStream fos = new FileOutputStream(cacheFile)) {
+                fos.write(file.get());
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         // File type

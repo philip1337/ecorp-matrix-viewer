@@ -5,10 +5,7 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.multipart.Attribute;
 
 import message.ImageMessage;
-import types.Client;
-import types.Master;
-import types.MessageRoute;
-import types.WebSession;
+import types.*;
 
 import util.ImageLoader;
 
@@ -21,6 +18,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,6 +60,7 @@ public class RemotePicture extends MessageRoute {
     public ReturnMessage ProcessAndReturn(OutputStream output, HttpRequest request, WebSession session) {
         ReturnMessage msg = new ReturnMessage();
         boolean processLocal = false;
+        boolean storeImage = false;
 
         // Image
         ImageMessage m = new ImageMessage();
@@ -82,6 +82,10 @@ public class RemotePicture extends MessageRoute {
 
                 case "transpose":
                     m.transpose_ = true;
+                    break;
+
+                case "storeImage":
+                    storeImage = true;
                     break;
 
                 case "aspectRatio":
@@ -167,6 +171,25 @@ public class RemotePicture extends MessageRoute {
             msg.message_ = "Error: Remote (web scrapping) not supported for that image, please upload it manually.";
             msg.type_ = "danger";
             return msg;
+        }
+
+        // Store image
+        if (storeImage) {
+            SimpleDateFormat df = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
+            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+            String cachePath = Config.CACHE_FOLDER + df.format(timestamp) + website.getFile();
+
+            // Cache path
+            File file = new File(cachePath);
+            file.getParentFile().mkdirs();
+
+            try (FileOutputStream fos = new FileOutputStream(file)) {
+                fos.write(data.toByteArray());
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         // Get buffered image
