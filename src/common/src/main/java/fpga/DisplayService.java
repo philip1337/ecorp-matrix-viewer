@@ -48,6 +48,16 @@ public class DisplayService extends Thread {
     private ImageLoader loader_ = null;
 
     /**
+     * 100 ms per frame
+     */
+    private int pause_ = 100;
+
+    /**
+     * Transpose
+     */
+    public boolean transpose_ = false;
+
+    /**
      * Constructor
      * @param duration duration
      * @param brightness float
@@ -58,6 +68,22 @@ public class DisplayService extends Thread {
         duration_ = duration;
         brightness_ = brightness;
         loader_ = new ImageLoader();
+    }
+
+    /**
+     * Set transpose
+     * @param state transpose
+     */
+    public void SetTranspose(boolean state) {
+        transpose_ = state;
+    }
+
+    /**
+     * Pause per frame
+     * @param pause
+     */
+    public void SetPause(int pause) {
+        pause_ = pause;
     }
 
     /**
@@ -81,11 +107,12 @@ public class DisplayService extends Thread {
      * Add frame
      * @param i buffer
      * @param process if pictures should be processed
+     * @param keepAspectRatio if picture should keep aspect ratio
      */
-    public void AddFrame(BufferedImage i, boolean process) {
+    public void AddFrame(BufferedImage i, boolean process, boolean keepAspectRatio) {
         // Process
         if (process) {
-            frames_.add(loader_.ProcessImage(i, transmitter_.GetWidth(), transmitter_.GetHeight()));
+            frames_.add(loader_.ProcessImage(i, transmitter_.GetWidth(), transmitter_.GetHeight(), keepAspectRatio));
         } else {
             frames_.add(i);
         }
@@ -94,8 +121,9 @@ public class DisplayService extends Thread {
     /**
      * Set frames
      * @param frames as buffer
+     * @param keepAspectRatio if picture should keep aspect ratio
      */
-    public void SetFramesFromBuffer(List<byte[]> frames, boolean process) {
+    public void SetFramesFromBuffer(List<byte[]> frames, boolean process, boolean keepAspectRatio) {
         for (byte[] buffer : frames) {
             final BufferedImage t = loader_.FromBuffer(buffer);
 
@@ -104,22 +132,23 @@ public class DisplayService extends Thread {
                 continue;
 
             // Add frame
-            AddFrame(t, process);
+            AddFrame(t, process, keepAspectRatio);
         }
     }
 
     /**
      * Set frames
      * @param frames as ImageBuffer
+     * @param keepAspectRatio if picture should keep aspect ratio
      */
-    public void SetFrames(List<BufferedImage> frames, boolean process) {
+    public void SetFrames(List<BufferedImage> frames, boolean process, boolean keepAspectRatio) {
         for (BufferedImage t : frames) {
             // If image is invalid | TODO: Log
             if (t == null)
                 continue;
 
             // Add frame
-            AddFrame(t, process);
+            AddFrame(t, process, keepAspectRatio);
         }
     }
 
@@ -130,32 +159,38 @@ public class DisplayService extends Thread {
         // Add seconds
         LocalTime localTime_ = LocalTime.now().plusSeconds(duration_);
 
-        // If we are done
-        while(LocalTime.now().isAfter(localTime_) || duration_ == 0) {
-            try {
-                // If we show frames
-                if (frames_.size() >= 0) {
-                    for (BufferedImage i : frames_) {
-                        transmitter_.TransmitImage(i, brightness_);
+        try {
+            // If we are done
+            while (LocalTime.now().isAfter(localTime_) || duration_ == 0) {
+                try {
+                    // If we show frames
+                    if (frames_.size() >= 0) {
+                        for (BufferedImage i : frames_) {
+                            transmitter_.TransmitImage(i, brightness_, transpose_);
+                            java.lang.Thread.sleep(pause_);
+                        }
+                    } else if (color_ != null) {
+                        transmitter_.TransmitColor(color_, brightness_);
+                        java.lang.Thread.sleep(pause_);
                     }
-                } else if (color_ != null) {
-                    transmitter_.TransmitColor(color_, brightness_);
+                } catch (IOException e) {
+                    // TODO: Log
                 }
-            } catch (IOException e) {
-                // TODO: Log
+
+                // If we have to stop
+                if (stop_.get())
+                    break;
             }
 
-            // If we have to stop
-            if (stop_.get())
-                break;
-        }
-
-        // Clear matrix
-        Color c = new Color(0,0,0);
-        try {
-            transmitter_.TransmitColor(c, 0.0f);
-        } catch (IOException e) {
-            // TODO: Log (failed to clear)
+            // Clear matrix
+            Color c = new Color(0, 0, 0);
+            try {
+                transmitter_.TransmitColor(c, 0.0f);
+            } catch (IOException e) {
+                // TODO: Log (failed to clear)
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 }

@@ -72,6 +72,7 @@ public class Main extends SimpleApp {
 
         // Display service
         DisplayService service = new DisplayService(t, options_.duration_, options_.brightness_);
+        service.SetPause(options_.pause_);
 
         // Image loader
         ImageLoader loader = new ImageLoader();
@@ -105,10 +106,10 @@ public class Main extends SimpleApp {
                 return;
             }
 
-            service.AddFrame(image, true);
+            service.AddFrame(image, true, options_.aspectRatio_);
         } else if (mimeType.equals("image/gif")){
             try {
-                service.SetFrames(loader.GetFrames(f), true);
+                service.SetFrames(loader.GetFrames(f), true, options_.aspectRatio_);
             } catch (IOException e) {
                 System.out.printf("[Error] Failed to read frames: %s. \n" , f.getAbsolutePath());
                 return;

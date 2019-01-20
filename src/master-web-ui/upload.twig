@@ -52,11 +52,19 @@
                     </small>
                 </div>
 
+                <div class="form-group">
+                    <label for="pauseInput">Pause</label>
+                    <input name="pause" type="number" class="form-control" id="pauseInput" value="100"
+                           aria-describedby="pauseInputHelp">
+                    <small id="pauseInputHelp" class="form-text text-muted">Pause per frame in milliseconds.
+                    </small>
+                </div>
+
                 <div class="form-check">
-                    <input name="keepDimensions" class="form-check-input" type="checkbox" value="keep"
-                           id="keepDimenisons">
-                    <label class="form-check-label" for="keepDimenisons">
-                        Keep dimensions (Portrait)
+                    <input name="aspectRatio" class="form-check-input" type="checkbox" value="keepAspectRatio"
+                           id="aspectRatio">
+                    <label class="form-check-label" for="aspectRatio">
+                        Keep aspect ratio (dimensions)
                     </label>
                 </div>
 

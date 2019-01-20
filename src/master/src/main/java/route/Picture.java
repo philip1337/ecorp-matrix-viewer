@@ -77,6 +77,18 @@ public class Picture extends MessageRoute {
                     m.transpose_ = true;
                     break;
 
+                case "aspectRatio":
+                    m.keepAspectRatio_ = true;
+                    break;
+
+                case "pause":
+                    try {
+                        m.pause_ = Integer.parseInt(a.getValue());
+                    } catch (IOException e) {
+                        m.pause_ = 100;
+                    }
+                    break;
+
                 case "brightness":
                     try {
                         m.brightness_ = Float.parseFloat(a.getValue());
@@ -147,7 +159,8 @@ public class Picture extends MessageRoute {
             // Process
             for(BufferedImage i : frames) {
                 if (processLocal) {
-                    m.image_.add(loader.ProcessImage(i, client.GetWidth(), client.GetHeight(), m.type_));
+                    m.image_.add(loader.ProcessImage(i, client.GetWidth(), client.GetHeight(),
+                                                     m.type_, m.keepAspectRatio_));
 
                     // Done, just display it
                     m.processed_ = true;

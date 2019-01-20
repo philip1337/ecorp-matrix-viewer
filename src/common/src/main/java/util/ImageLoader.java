@@ -2,6 +2,7 @@ package util;
 
 import com.sun.imageio.plugins.gif.GIFImageReader;
 import com.sun.imageio.plugins.gif.GIFImageReaderSpi;
+import javafx.embed.swing.SwingFXUtils;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -94,7 +95,7 @@ public class ImageLoader {
      * @param img buffer
      * @param newW new width
      * @param newH new height
-     * @return
+     * @return scaled image
      */
     public BufferedImage Resize(BufferedImage img, int newW, int newH) {
         Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
@@ -108,20 +109,54 @@ public class ImageLoader {
     }
 
     /**
+     * Resize with keep aspect ratio
+     * https://stackoverflow.com/questions/10245220/java-image-resize-maintain-aspect-ratio
+     * @param image buffer
+     * @param scaledWidth bew width
+     * @param scaledHeight new height
+     * @param preserveRatio keep aspect ratio
+     * @return scaled image
+     */
+    public static BufferedImage Resize(BufferedImage image, int scaledWidth, int scaledHeight, boolean preserveRatio) {
+        // Keep aspect ratio
+        if (preserveRatio) {
+            double imageHeight = image.getHeight();
+            double imageWidth = image.getWidth();
+
+            if (imageHeight/scaledHeight > imageWidth/scaledWidth) {
+                scaledWidth = (int) (scaledHeight * imageWidth / imageHeight);
+            } else {
+                scaledHeight = (int) (scaledWidth * imageHeight / imageWidth);
+            }
+        }
+
+        // creates output image
+        BufferedImage outputBufImage = new BufferedImage(scaledWidth, scaledHeight, image.getType());
+
+        // scales the input image to the output image
+        Graphics2D g2d = outputBufImage.createGraphics();
+        g2d.drawImage(image, 0, 0, scaledWidth, scaledHeight, null);
+        g2d.dispose();
+
+        return outputBufImage;
+    }
+
+    /**
      * Process image
      * @param i BufferedImage
      * @param width expected width
      * @param height expected height
+     * @param keepAspectRatio keep aspect ratio
      * @return image buffer
      */
-    public BufferedImage ProcessImage(BufferedImage i, int width, int height) {
+    public BufferedImage ProcessImage(BufferedImage i, int width, int height, boolean keepAspectRatio) {
         // Copy
         BufferedImage temp = i;
         byte[] ret = null;
 
         // Resize client
         if (i.getHeight() != height || i.getWidth() != width) {
-            temp = Resize(i, height, width);
+            temp = Resize(i, width, height, keepAspectRatio);
         }
 
         return temp;
@@ -133,16 +168,17 @@ public class ImageLoader {
      * @param width expected width
      * @param height expected height
      * @param type image type png, jpg etc.
+     * @param keepAspectRatio keep aspect ratio
      * @return transport array
      */
-    public byte[] ProcessImage(BufferedImage i, int width, int height, String type) {
+    public byte[] ProcessImage(BufferedImage i, int width, int height, String type, boolean keepAspectRatio) {
         // Copy
         BufferedImage temp = i;
         byte[] ret = null;
 
         // Resize client
         if (i.getHeight() != height || i.getWidth() != width) {
-            temp = Resize(i, height, width);
+            temp = Resize(i, width, height, keepAspectRatio);
         }
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();

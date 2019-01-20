@@ -95,7 +95,9 @@ public class MasterClientHandler extends ChannelInboundHandlerAdapter {
                 // Setup display service
                 ImageMessage i = (ImageMessage)message.object_;
                 display_ = new DisplayService(transmitter_, i.duration_, i.brightness_);
-                display_.SetFramesFromBuffer(i.image_, !i.processed_);
+                display_.SetFramesFromBuffer(i.image_, !i.processed_, i.keepAspectRatio_);
+                display_.SetPause(i.pause_);
+                display_.SetTranspose(i.transpose_);
                 display_.Start();
                 break;
 
