@@ -53,11 +53,6 @@ public class DisplayService extends Thread {
     private int pause_ = 100;
 
     /**
-     * Transpose
-     */
-    public boolean transpose_ = false;
-
-    /**
      * Constructor
      * @param duration duration
      * @param brightness float
@@ -68,14 +63,6 @@ public class DisplayService extends Thread {
         duration_ = duration;
         brightness_ = brightness;
         loader_ = new ImageLoader();
-    }
-
-    /**
-     * Set transpose
-     * @param state transpose
-     */
-    public void SetTranspose(boolean state) {
-        transpose_ = state;
     }
 
     /**
@@ -109,10 +96,11 @@ public class DisplayService extends Thread {
      * @param process if pictures should be processed
      * @param keepAspectRatio if picture should keep aspect ratio
      */
-    public void AddFrame(BufferedImage i, boolean process, boolean keepAspectRatio) {
+    public void AddFrame(BufferedImage i, boolean process, boolean keepAspectRatio, boolean transpose) {
         // Process
         if (process) {
-            frames_.add(loader_.ProcessImage(i, transmitter_.GetWidth(), transmitter_.GetHeight(), keepAspectRatio));
+            frames_.add(loader_.ProcessImage(i, transmitter_.GetWidth(),
+                    transmitter_.GetHeight(), keepAspectRatio, transpose));
         } else {
             frames_.add(i);
         }
@@ -123,7 +111,7 @@ public class DisplayService extends Thread {
      * @param frames as buffer
      * @param keepAspectRatio if picture should keep aspect ratio
      */
-    public void SetFramesFromBuffer(List<byte[]> frames, boolean process, boolean keepAspectRatio) {
+    public void SetFramesFromBuffer(List<byte[]> frames, boolean process, boolean keepAspectRatio, boolean transpose) {
         for (byte[] buffer : frames) {
             final BufferedImage t = loader_.FromBuffer(buffer);
 
@@ -132,7 +120,7 @@ public class DisplayService extends Thread {
                 continue;
 
             // Add frame
-            AddFrame(t, process, keepAspectRatio);
+            AddFrame(t, process, keepAspectRatio, transpose);
         }
     }
 
@@ -141,14 +129,14 @@ public class DisplayService extends Thread {
      * @param frames as ImageBuffer
      * @param keepAspectRatio if picture should keep aspect ratio
      */
-    public void SetFrames(List<BufferedImage> frames, boolean process, boolean keepAspectRatio) {
+    public void SetFrames(List<BufferedImage> frames, boolean process, boolean keepAspectRatio, boolean transpose) {
         for (BufferedImage t : frames) {
             // If image is invalid | TODO: Log
             if (t == null)
                 continue;
 
             // Add frame
-            AddFrame(t, process, keepAspectRatio);
+            AddFrame(t, process, keepAspectRatio, transpose);
         }
     }
 
@@ -166,7 +154,7 @@ public class DisplayService extends Thread {
                     // If we show frames
                     if (frames_.size() >= 0) {
                         for (BufferedImage i : frames_) {
-                            transmitter_.TransmitImage(i, brightness_, transpose_);
+                            transmitter_.TransmitImage(i, brightness_);
                             java.lang.Thread.sleep(pause_);
                         }
                     } else if (color_ != null) {

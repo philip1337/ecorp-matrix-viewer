@@ -227,7 +227,7 @@ public class RemotePicture extends MessageRoute {
             for(BufferedImage i : frames) {
                 if (processLocal) {
                     m.image_.add(loader.ProcessImage(i, client.GetWidth(), client.GetHeight(),
-                                                     m.type_, m.keepAspectRatio_));
+                                                     m.type_, m.keepAspectRatio_, m.transpose_));
 
                     // Done, just display it
                     m.processed_ = true;

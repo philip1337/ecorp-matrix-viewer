@@ -2,7 +2,6 @@ package util;
 
 import com.sun.imageio.plugins.gif.GIFImageReader;
 import com.sun.imageio.plugins.gif.GIFImageReaderSpi;
-import javafx.embed.swing.SwingFXUtils;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -142,21 +141,49 @@ public class ImageLoader {
     }
 
     /**
+     * Transpose
+     * @param image to transpose
+     * @return transposed image
+     */
+    public static BufferedImage Transpose(BufferedImage image) {
+        // https://en.wikipedia.org/wiki/In-place_matrix_transposition#Square_matrices
+        //for n = 0 to N - 2
+        //    for m = n + 1 to N - 1
+        //        swap A(n,m) with A(m,n)
+        assert image.getWidth() == image.getHeight();
+        for (int n = 0; n <= image.getWidth() - 2; n++) {
+            for (int m = n + 1; m <= image.getHeight() - 1; m++) {
+                int old = image.getRGB(n, m);
+                image.setRGB(n, m, image.getRGB(m, n));
+                image.setRGB(m, n, old);
+            }
+        }
+
+        return image;
+    }
+
+    /**
      * Process image
      * @param i BufferedImage
      * @param width expected width
      * @param height expected height
      * @param keepAspectRatio keep aspect ratio
+     * @param transpose transpose image
      * @return image buffer
      */
-    public BufferedImage ProcessImage(BufferedImage i, int width, int height, boolean keepAspectRatio) {
+    public BufferedImage ProcessImage(BufferedImage i, int width, int height,
+                                      boolean keepAspectRatio, boolean transpose) {
         // Copy
         BufferedImage temp = i;
-        byte[] ret = null;
 
-        // Resize client
+        // Resize image
         if (i.getHeight() != height || i.getWidth() != width) {
             temp = Resize(i, width, height, keepAspectRatio);
+        }
+
+        // Transpose image
+        if (transpose) {
+            temp = Transpose(temp);
         }
 
         return temp;
@@ -169,16 +196,23 @@ public class ImageLoader {
      * @param height expected height
      * @param type image type png, jpg etc.
      * @param keepAspectRatio keep aspect ratio
+     * @param transpose transpose image
      * @return transport array
      */
-    public byte[] ProcessImage(BufferedImage i, int width, int height, String type, boolean keepAspectRatio) {
+    public byte[] ProcessImage(BufferedImage i, int width, int height,
+                               String type, boolean keepAspectRatio, boolean transpose) {
         // Copy
         BufferedImage temp = i;
         byte[] ret = null;
 
-        // Resize client
+        // Resize image
         if (i.getHeight() != height || i.getWidth() != width) {
             temp = Resize(i, width, height, keepAspectRatio);
+        }
+
+        // Transpose image
+        if (transpose) {
+            temp = Transpose(temp);
         }
 
         ByteArrayOutputStream stream = new ByteArrayOutputStream();

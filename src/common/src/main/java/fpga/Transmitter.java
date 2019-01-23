@@ -164,7 +164,7 @@ public class Transmitter {
      * @param brightness float 1 = max
      * @throws IOException if comport is failing
      */
-    public void TransmitImage(BufferedImage img, float brightness, boolean transpose) throws IOException {
+    public void TransmitImage(BufferedImage img, float brightness) throws IOException {
         assert port_ != null : "No port found";
         // TODO: Implement transpose
 
@@ -220,16 +220,6 @@ public class Transmitter {
         }
 
         o.flush();
-    }
-
-    /**
-     * Transmit raw image pixels
-     * @param img data
-     * @param brightness float 1 = max
-     * @throws IOException if comport is failing
-     */
-    public void TransmitImage(BufferedImage img, float brightness) throws IOException {
-        TransmitImage(img, brightness, false);
     }
 
     /**

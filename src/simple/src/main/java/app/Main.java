@@ -96,7 +96,7 @@ public class Main extends SimpleApp {
         // Mime type not found
         if (mimeType != null &&mimeType.equals("image/gif")){
             try {
-                service.SetFrames(loader.GetFrames(f), true, options_.aspectRatio_);
+                service.SetFrames(loader.GetFrames(f), true, options_.aspectRatio_, options_.transpose_);
             } catch (IOException e) {
                 System.out.printf("[Error] Failed to read frames: %s. \n" , f.getAbsolutePath());
                 return;
@@ -111,7 +111,7 @@ public class Main extends SimpleApp {
                 return;
             }
 
-            service.AddFrame(image, true, options_.aspectRatio_);
+            service.AddFrame(image, true, options_.aspectRatio_, options_.transpose_);
         }
 
         // Start service

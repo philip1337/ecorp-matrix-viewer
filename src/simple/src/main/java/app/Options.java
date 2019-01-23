@@ -16,6 +16,9 @@ public class Options {
     @CommandLine.Option(names = { "-c", "--clean" }, description = "Clean matrix, vanish.")
     public boolean clean_ = false;
 
+    @CommandLine.Option(names = { "-t", "--transpose" }, description = "Transpose matrix.")
+    public boolean transpose_ = false;
+
     @CommandLine.Option(names = { "-x", "--width" }, description = "Width of the matrix (x, default: 16).")
     public int width_ = 16;
 
