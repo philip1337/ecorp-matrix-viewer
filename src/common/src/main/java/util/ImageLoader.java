@@ -1,10 +1,8 @@
 package util;
 
-import com.sun.imageio.plugins.gif.GIFImageReader;
-import com.sun.imageio.plugins.gif.GIFImageReaderSpi;
-
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -55,10 +53,15 @@ public class ImageLoader {
      */
     public ArrayList<BufferedImage> GetFrames(File gif) throws IOException{
         ArrayList<BufferedImage> frames = new ArrayList<BufferedImage>();
-        ImageReader ir = new GIFImageReader(new GIFImageReaderSpi());
-        ir.setInput(ImageIO.createImageInputStream(gif));
-        for(int i = 0; i < ir.getNumImages(true); i++)
-            frames.add(ir.getRawImageType(i).createBufferedImage(ir.getWidth(i), ir.getHeight(i)));
+        ImageReader reader = ImageIO.getImageReadersByFormatName("gif").next();
+        ImageInputStream stream = ImageIO.createImageInputStream(gif);
+        reader.setInput(stream);
+        int count = reader.getNumImages(true);
+        for (int index = 0; index < count; index++) {
+            BufferedImage frame = reader.read(index);
+            if (frame != null)
+                frames.add(frame);
+        }
         return frames;
     }
 
@@ -80,11 +83,15 @@ public class ImageLoader {
      * @throws IOException if read fails
      */
     public ArrayList<BufferedImage> GetFrames(InputStream stream) throws IOException{
-        ArrayList<BufferedImage> frames = new ArrayList<>();
-        ImageReader ir = new GIFImageReader(new GIFImageReaderSpi());
-        ir.setInput(ImageIO.createImageInputStream(stream));
-        for(int i = 0; i < ir.getNumImages(true); i++)
-            frames.add(ir.getRawImageType(i).createBufferedImage(ir.getWidth(i), ir.getHeight(i)));
+        ArrayList<BufferedImage> frames = new ArrayList<BufferedImage>();
+        ImageReader reader = ImageIO.getImageReadersByFormatName("gif").next();
+        reader.setInput(stream);
+        int count = reader.getNumImages(true);
+        for (int index = 0; index < count; index++) {
+            BufferedImage frame = reader.read(index);
+            if (frame != null)
+                frames.add(frame);
+        }
         return frames;
     }
 
