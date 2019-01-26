@@ -328,10 +328,10 @@ public class ImageLoader {
 
     /**
      * Rotate
-     *
-     * @param image
+     * https://stackoverflow.com/questions/36395716/how-to-save-rotated-buffered-image-in-another-buffered-image
+     * @param image input
      * @param rotate angle
-     * @return
+     * @return rotated image
      */
     private BufferedImage Rotate(BufferedImage image, int rotate) {
         double rads = Math.toRadians(rotate);

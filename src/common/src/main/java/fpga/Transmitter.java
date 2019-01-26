@@ -215,6 +215,7 @@ public class Transmitter {
             int height = img.getHeight();
             int width = img.getWidth();
 
+            // Limit on matrix size (16x16)
             assert width == width_ : "Invalid image size";
             assert height == height_ : "Invalid image size";
 
