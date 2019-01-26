@@ -47,6 +47,18 @@ public class Color extends java.awt.Color {
     }
 
     /**
+     * To bytes
+     * @return color as byte array
+     */
+    public byte[] RawBytes() {
+        return String.format("%02X%02X%02X",
+                Math.max((int)(getRed()), 0),
+                Math.max((int)(getGreen()), 0),
+                Math.max((int)(getBlue()), 0)).getBytes();
+    }
+
+
+    /**
      * To hex
      * @return color as hex string
      */

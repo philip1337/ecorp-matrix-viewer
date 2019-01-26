@@ -122,8 +122,6 @@ public class Picture extends MessageRoute {
             }
         }
 
-        System.out.printf("brightness: %f  rotate: %d\n", m.brightness_, m.rotate_);
-
         // Get first
         FileUpload file = session.GetFiles().get(0);
         byte[] imageBuffer = null;
