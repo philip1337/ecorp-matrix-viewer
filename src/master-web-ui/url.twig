@@ -38,6 +38,14 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="rotateInput">Rotate</label>
+                    <input name="rotate" type="range" class="form-control" id="rotateInput"
+                           min="0" max="360" value=0 step="1"
+                           aria-describedby="rotateInputHelp">
+                    <small id="rotateInputHelp" class="form-text text-muted">Rotate (0-360)</small>
+                </div>
+
+                <div class="form-group">
                     <label for="brightnessInput">Brightness</label>
                     <input name="brightness" type="range" class="form-control" id="brightnessInput"
                            min="1" max="100" value="30" step="1"

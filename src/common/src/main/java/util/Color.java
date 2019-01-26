@@ -18,6 +18,17 @@ public class Color extends java.awt.Color {
 
     /**
      * Constructor
+     * @param r
+     * @param g
+     * @param b
+     * @param a
+     */
+    public Color(int r, int g, int b, int a) {
+        super(r,g,b,a);
+    }
+
+    /**
+     * Constructor
      * @param rgb
      */
     public Color(int rgb) {

@@ -103,12 +103,13 @@ public class DisplayService extends Thread {
      * @param i buffer
      * @param process if pictures should be processed
      * @param keepAspectRatio if picture should keep aspect ratio
+     * @param rotate if picture should be rotated
      */
-    public void AddFrame(ImageFrame i, boolean process, boolean keepAspectRatio, boolean transpose) {
+    public void AddFrame(ImageFrame i, boolean process, boolean keepAspectRatio, boolean transpose, int rotate) {
         // Process
         if (process) {
             frames_.add(loader_.ProcessImage(i, transmitter_.GetWidth(),
-                    transmitter_.GetHeight(), keepAspectRatio, transpose));
+                    transmitter_.GetHeight(), keepAspectRatio, transpose, rotate));
         } else {
             frames_.add(i);
         }
@@ -118,8 +119,10 @@ public class DisplayService extends Thread {
      * Set frames
      * @param frames as buffer
      * @param keepAspectRatio if picture should keep aspect ratio
+     * @param transpose if images has to be transposed
+     * @param rotate if images has to be rotated
      */
-    public void SetFramesFromBuffer(List<ImageBuffer> frames, boolean process, boolean keepAspectRatio, boolean transpose) {
+    public void SetFramesFromBuffer(List<ImageBuffer> frames, boolean process, boolean keepAspectRatio, boolean transpose, int rotate) {
         for (ImageBuffer buffer : frames) {
             final ImageFrame t = loader_.FromBufferToFrame(buffer);
 
@@ -128,7 +131,7 @@ public class DisplayService extends Thread {
                 continue;
 
             // Add frame
-            AddFrame(t, process, keepAspectRatio, transpose);
+            AddFrame(t, process, keepAspectRatio, transpose, rotate);
         }
     }
 
@@ -136,15 +139,17 @@ public class DisplayService extends Thread {
      * Set frames
      * @param frames as ImageBuffer
      * @param keepAspectRatio if picture should keep aspect ratio
+     * @param transpose if images has to be transposed
+     * @param rotate if images has to be rotated
      */
-    public void SetFrames(List<ImageFrame> frames, boolean process, boolean keepAspectRatio, boolean transpose) {
+    public void SetFrames(List<ImageFrame> frames, boolean process, boolean keepAspectRatio, boolean transpose, int rotate) {
         for (ImageFrame t : frames) {
             // If image is invalid | TODO: Log
             if (t == null)
                 continue;
 
             // Add frame
-            AddFrame(t, process, keepAspectRatio, transpose);
+            AddFrame(t, process, keepAspectRatio, transpose, rotate);
         }
     }
 

@@ -12,6 +12,7 @@ public class ImageMessage implements java.io.Serializable {
 
     public float brightness_;
     public long duration_;
+    public int rotate_;
     public boolean transpose_;
     public boolean keepAspectRatio_;
 

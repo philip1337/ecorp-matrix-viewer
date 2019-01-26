@@ -92,6 +92,14 @@ public class RemotePicture extends MessageRoute {
                     m.keepAspectRatio_ = true;
                     break;
 
+                case "rotate":
+                    try {
+                        m.rotate_ = Integer.parseInt(a.getValue());
+                    } catch (IOException e) {
+                        m.rotate_ = 0;
+                    }
+                    break;
+
                 case "pause":
                     try {
                         m.pause_ = Integer.parseInt(a.getValue());
@@ -109,7 +117,7 @@ public class RemotePicture extends MessageRoute {
                 case "brightness":
                     try {
                         int value = Integer.min(100, Integer.parseInt(a.getValue()));
-                        m.brightness_ = value / 100;
+                        m.brightness_ = (float)value / 100;
                     } catch (IOException e) {
                         m.brightness_ = 1.0f;
                     }
@@ -232,7 +240,7 @@ public class RemotePicture extends MessageRoute {
             for(ImageFrame i : frames) {
                 if (processLocal) {
                     m.image_.add(loader.ProcessImage(i, client.GetWidth(), client.GetHeight(),
-                            m.type_.replace("image/", ""), m.keepAspectRatio_, m.transpose_));
+                            m.type_.replace("image/", ""), m.keepAspectRatio_, m.transpose_, m.rotate_));
 
                     // Done, just display it
                     m.processed_ = true;

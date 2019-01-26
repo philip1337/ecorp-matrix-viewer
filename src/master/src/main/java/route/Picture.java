@@ -55,7 +55,7 @@ public class Picture extends MessageRoute {
         if (clients_.size() == 0) {
             msg.message_ = "Error: There are no nodes registered currently, please try again later.";
             msg.type_ = "danger";
-            return msg;
+            //return msg;
         }
 
         // Invalid file upload
@@ -87,6 +87,14 @@ public class Picture extends MessageRoute {
                     m.keepAspectRatio_ = true;
                     break;
 
+                case "rotate":
+                    try {
+                        m.rotate_ = Integer.parseInt(a.getValue());
+                    } catch (IOException e) {
+                        m.rotate_ = 0;
+                    }
+                    break;
+
                 case "pause":
                     try {
                         m.pause_ = Integer.parseInt(a.getValue());
@@ -98,7 +106,7 @@ public class Picture extends MessageRoute {
                 case "brightness":
                     try {
                         int value = Integer.min(100, Integer.parseInt(a.getValue()));
-                        m.brightness_ = value / 100;
+                        m.brightness_ = (float)value / 100;
                     } catch (IOException e) {
                         m.brightness_ = 1.0f;
                     }
@@ -113,6 +121,8 @@ public class Picture extends MessageRoute {
                     break;
             }
         }
+
+        System.out.printf("brightness: %f  rotate: %d\n", m.brightness_, m.rotate_);
 
         // Get first
         FileUpload file = session.GetFiles().get(0);
@@ -201,7 +211,7 @@ public class Picture extends MessageRoute {
             for(ImageFrame i : frames) {
                 if (processLocal) {
                     m.image_.add(loader.ProcessImage(i, client.GetWidth(), client.GetHeight(),
-                            m.type_.replace("image/", ""), m.keepAspectRatio_, m.transpose_));
+                            m.type_.replace("image/", ""), m.keepAspectRatio_, m.transpose_, m.rotate_));
 
                     // Done, just display it
                     m.processed_ = true;
