@@ -194,7 +194,7 @@ public class RemotePicture extends MessageRoute {
 
         // Get buffered image
         ImageLoader loader = new ImageLoader();
-        List<BufferedImage> frames = new ArrayList<>();
+        List<ImageFrame> frames = new ArrayList<>();
 
         // Differ between gif and normal image
         if (m.type_.equals("image/gif")) {
@@ -207,7 +207,7 @@ public class RemotePicture extends MessageRoute {
             }
         } else {
             // Get buffered image
-            BufferedImage temp = loader.FromBuffer(data.toByteArray());
+            ImageFrame temp = loader.FromBuffer(data.toByteArray());
             if (temp == null) {
                 msg.message_ = "Error: File is not an image.";
                 msg.type_ = "danger";
@@ -224,15 +224,15 @@ public class RemotePicture extends MessageRoute {
             m.image_.clear();
 
             // Process
-            for(BufferedImage i : frames) {
+            for(ImageFrame i : frames) {
                 if (processLocal) {
                     m.image_.add(loader.ProcessImage(i, client.GetWidth(), client.GetHeight(),
-                                                     m.type_, m.keepAspectRatio_, m.transpose_));
+                            m.type_.replace("image/", ""), m.keepAspectRatio_, m.transpose_));
 
                     // Done, just display it
                     m.processed_ = true;
                 } else {
-                    m.image_.add(data.toByteArray());
+                    m.image_.add(loader.ToImageBuffer(i, m.type_.replace("image/", "")));
 
                     // Not ready, process on node
                     m.processed_ = false;

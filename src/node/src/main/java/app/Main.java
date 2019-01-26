@@ -101,10 +101,10 @@ public class Main extends SimpleApp {
      */
     @Override
     public void OnApp() {
-        // Stop cause module is not connected...
-        int code = transmitter_.FindModules(options_.device_);
-        if (code != Types.READY) {
-            System.out.printf("[Error] Failed to initialize matrix, code: %d\n", code);
+        // Find matrix module
+        byte ret = transmitter_.FindModules(options_.device_);
+        if (ret != Types.READY) {
+            System.out.printf("[Error] Failed to initialize matrix error code: %d. \n", ret);
             return;
         }
 

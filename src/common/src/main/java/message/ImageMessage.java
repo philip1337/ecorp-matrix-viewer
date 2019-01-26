@@ -1,10 +1,12 @@
 package message;
 
+import types.ImageBuffer;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class ImageMessage implements java.io.Serializable {
-    public List<byte[]> image_ = new ArrayList<>();
+    public List<ImageBuffer> image_ = new ArrayList<>();
     public int pause_;
     public String type_;
 

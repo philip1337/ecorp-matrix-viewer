@@ -55,7 +55,7 @@ public class Picture extends MessageRoute {
         if (clients_.size() == 0) {
             msg.message_ = "Error: There are no nodes registered currently, please try again later.";
             msg.type_ = "danger";
-            //return msg;
+            return msg;
         }
 
         // Invalid file upload
@@ -135,8 +135,14 @@ public class Picture extends MessageRoute {
             String cachePath = Config.CACHE_FOLDER + df.format(timestamp) + " - " + file.getFilename();
 
             // Cache path
-            File cacheFile = new File(cachePath);
-            cacheFile.getParentFile().mkdirs();
+            File cacheFile = new File(cachePath).getParentFile();
+
+            // Create directories
+            if (!cacheFile.exists() && cacheFile.mkdirs()) {
+                msg.message_ = "Error: Cache directory is not writeable.";
+                msg.type_ = "danger";
+                return msg;
+            }
 
             try (FileOutputStream fos = new FileOutputStream(cacheFile)) {
                 fos.write(file.get());
@@ -152,7 +158,13 @@ public class Picture extends MessageRoute {
 
         // Get buffered image
         ImageLoader loader = new ImageLoader();
-        List<BufferedImage> frames = new ArrayList<>();
+        List<ImageFrame> frames = new ArrayList<>();
+
+        // Already throw back
+        if (!m.type_.contains("image/")) {
+            msg.message_ = "Error: File is not an image.";
+            msg.type_ = "danger";
+        }
 
         // Differ between gif and normal image
         if (m.type_.equals("image/gif")) {
@@ -165,8 +177,8 @@ public class Picture extends MessageRoute {
             }
         } else {
             // Get buffered image
-            BufferedImage temp = loader.FromBuffer(imageBuffer);
-            if (temp == null) {
+            ImageFrame temp = loader.FromBuffer(imageBuffer);
+            if (temp.image_ == null) {
                 msg.message_ = "Error: File is not an image.";
                 msg.type_ = "danger";
                 return msg;
@@ -182,15 +194,15 @@ public class Picture extends MessageRoute {
             m.image_.clear();
 
             // Process
-            for(BufferedImage i : frames) {
+            for(ImageFrame i : frames) {
                 if (processLocal) {
                     m.image_.add(loader.ProcessImage(i, client.GetWidth(), client.GetHeight(),
-                                                     m.type_, m.keepAspectRatio_, m.transpose_));
+                            m.type_.replace("image/", ""), m.keepAspectRatio_, m.transpose_));
 
                     // Done, just display it
                     m.processed_ = true;
                 } else {
-                    m.image_.add(imageBuffer);
+                    m.image_.add(loader.ToImageBuffer(i, m.type_.replace("image/", "")));
 
                     // Not ready, process on node
                     m.processed_ = false;

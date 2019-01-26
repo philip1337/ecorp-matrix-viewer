@@ -3,6 +3,7 @@ package app;
 import fpga.DisplayService;
 import fpga.Transmitter;
 import fpga.Types;
+import types.ImageFrame;
 import util.ImageLoader;
 import util.SimpleApp;
 
@@ -109,15 +110,16 @@ public class Main extends SimpleApp {
             }
         } else {
             // Load image from file
-            BufferedImage image = loader.FromFile(f);
+            ImageFrame i = new ImageFrame();
+            i.image_ = loader.FromFile(f);
 
             // Image failed
-            if (image == null) {
+            if (i.image_ == null) {
                 System.out.printf("[Error] Failed to read image: %s. \n" , f.getAbsolutePath());
                 return;
             }
 
-            service.AddFrame(image, true, options_.aspectRatio_, options_.transpose_);
+            service.AddFrame(i, true, options_.aspectRatio_, options_.transpose_);
         }
 
         // Start service

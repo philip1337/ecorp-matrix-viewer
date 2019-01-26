@@ -115,7 +115,6 @@ public class Transmitter {
 
             // If port is valid we stop here
             if (p.openPort() && p.getOutputStream() != null) {
-                System.out.printf("%s -  %s\n", p.getDescriptivePortName(), p.getSystemPortName());
                 ports_.add(p);
             }
         }
@@ -203,7 +202,6 @@ public class Transmitter {
      */
     public void TransmitImage(BufferedImage img, float brightness) throws IOException {
         assert ports_.size() > 0 : "No port found";
-
         int temp = 0;
 
         // Loop trough ports and transmit

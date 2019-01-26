@@ -1,9 +1,14 @@
 package util;
 
 import org.imgscalr.Scalr;
+import org.w3c.dom.Node;
+import types.ImageBuffer;
+import types.ImageFrame;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
+import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageInputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -30,9 +35,20 @@ public class ImageLoader {
      * @param buffer byte array
      * @return image or null
      */
-    public BufferedImage FromBuffer(byte[] buffer) {
+    public ImageFrame FromBuffer(byte[] buffer) {
         ByteArrayInputStream stream = new ByteArrayInputStream(buffer);
         return FromStream(stream);
+    }
+
+    /**
+     * From buffer to frame
+     * @param b
+     * @return
+     */
+    public ImageFrame FromBufferToFrame(ImageBuffer b) {
+        ImageFrame i = FromBuffer(b.image_);
+        i.delay_ = b.delay_;
+        return i;
     }
 
     /**
@@ -40,31 +56,13 @@ public class ImageLoader {
      * @param stream input stream
      * @return image or null
      */
-    public BufferedImage FromStream(InputStream stream) {
+    public ImageFrame FromStream(InputStream stream) {
         try {
-            return ImageIO.read(stream);
+            ImageFrame f = new ImageFrame();
+            f.image_ = ImageIO.read(stream);
+            return f;
         } catch (IOException e) { }
         return null;
-    }
-
-    /**
-     * Get frames
-     * @param gif file
-     * @return frames
-     * @throws IOException if read fails
-     */
-    public ArrayList<BufferedImage> GetFrames(File gif) throws IOException{
-        ArrayList<BufferedImage> frames = new ArrayList<BufferedImage>();
-        ImageReader reader = ImageIO.getImageReadersByFormatName("gif").next();
-        ImageInputStream stream = ImageIO.createImageInputStream(gif);
-        reader.setInput(stream);
-        int count = reader.getNumImages(true);
-        for (int index = 0; index < count; index++) {
-            BufferedImage frame = reader.read(index);
-            if (frame != null)
-                frames.add(frame);
-        }
-        return frames;
     }
 
     /**
@@ -73,9 +71,79 @@ public class ImageLoader {
      * @return frames
      * @throws IOException if read fails
      */
-    public ArrayList<BufferedImage> GetFrames(byte[] buffer) throws IOException{
+    public ArrayList<ImageFrame> GetFrames(byte[] buffer) throws IOException{
         ByteArrayInputStream stream = new ByteArrayInputStream(buffer);
         return GetFrames(stream);
+    }
+
+    /**
+     * Try to read delay
+     * @param root root node metadata
+     * @return delay for frame
+     */
+    private int GetDelay(IIOMetadataNode root) {
+        // If root is invalid (Default 10)
+        if (root == null)
+            return 10;
+
+        // Find GraphicControlExtension node
+        int nNodes = root.getLength();
+        int d = 0;
+        for (int j = 0; j < nNodes; j++) {
+            Node node = root.item(j);
+            if (node.getNodeName().equalsIgnoreCase("GraphicControlExtension")) {
+                // Get delay value
+                String delay = ((IIOMetadataNode)node).getAttribute("delayTime");
+                d = Integer.parseInt(delay) * 10;
+                break;
+            }
+        }
+
+        return Integer.max(d, 10);
+    }
+
+    /**
+     * Read
+     * @param frames frame array
+     * @param reader image reader (buffer)
+     * @throws IOException if failed to read from buffer
+     */
+    private void Read(ArrayList<ImageFrame> frames, ImageReader reader) throws IOException {
+        int count = reader.getNumImages(true);
+        if (count == 0)
+            return;
+
+        // Get 'metaFormatName'. Need first frame for that.
+        // https://stackoverflow.com/questions/26801433/fix-frame-rate-of-animated-gif-in-java
+        IIOMetadata imageMetaData = reader.getImageMetadata(0);
+        String metaFormatName = imageMetaData.getNativeMetadataFormatName();
+
+        // Loop over frames
+        for (int index = 0; index < count; index++) {
+            ImageFrame frame = new ImageFrame();
+            frame.image_ =  reader.read(index);
+
+            // Try to get delay
+            frame.delay_ = GetDelay((IIOMetadataNode)reader.getImageMetadata(index).getAsTree(metaFormatName));
+            System.out.printf("delay: %d\n", frame.delay_);
+            if (frame.image_ != null)
+                frames.add(frame);
+        }
+    }
+
+    /**
+     * Get frames
+     * @param gif file
+     * @return frames
+     * @throws IOException if read fails
+     */
+    public ArrayList<ImageFrame> GetFrames(File gif) throws IOException{
+        ArrayList<ImageFrame> frames = new ArrayList<>();
+        ImageReader reader = ImageIO.getImageReadersByFormatName("gif").next();
+        ImageInputStream stream = ImageIO.createImageInputStream(gif);
+        reader.setInput(stream);
+        Read(frames, reader);
+        return frames;
     }
 
     /**
@@ -84,16 +152,11 @@ public class ImageLoader {
      * @return frames
      * @throws IOException if read fails
      */
-    public ArrayList<BufferedImage> GetFrames(InputStream stream) throws IOException{
-        ArrayList<BufferedImage> frames = new ArrayList<BufferedImage>();
+    public ArrayList<ImageFrame> GetFrames(InputStream stream) throws IOException{
+        ArrayList<ImageFrame> frames = new ArrayList<>();
         ImageReader reader = ImageIO.getImageReadersByFormatName("gif").next();
         reader.setInput(stream);
-        int count = reader.getNumImages(true);
-        for (int index = 0; index < count; index++) {
-            BufferedImage frame = reader.read(index);
-            if (frame != null)
-                frames.add(frame);
-        }
+        Read(frames, reader);
         return frames;
     }
 
@@ -178,14 +241,14 @@ public class ImageLoader {
      * @param transpose transpose image
      * @return image buffer
      */
-    public BufferedImage ProcessImage(BufferedImage i, int width, int height,
+    public ImageFrame ProcessImage(ImageFrame i, int width, int height,
                                       boolean keepAspectRatio, boolean transpose) {
         // Copy
-        BufferedImage temp = i;
+        BufferedImage temp = i.image_;
 
         // Resize image
-        if (i.getHeight() != height || i.getWidth() != width) {
-            temp = Resize(i, width, height, keepAspectRatio);
+        if (temp.getHeight() != height || temp.getWidth() != width) {
+            temp = Resize(temp, width, height, keepAspectRatio);
         }
 
         // Transpose image
@@ -193,7 +256,28 @@ public class ImageLoader {
             temp = Transpose(temp);
         }
 
-        return temp;
+        i.image_ = temp;
+        return i;
+    }
+
+    /**
+     * To image buffer
+     * @param i image
+     * @param type type (gif, jpg, png whatever)
+     * @return buffer
+     */
+    public ImageBuffer ToImageBuffer(ImageFrame i, String type) {
+        ImageBuffer ret = new ImageBuffer();
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        try {
+            ImageIO.write(i.image_, type, stream );
+            stream.flush();
+            ret.image_ = stream.toByteArray();
+            stream.close();
+        } catch (IOException ignored) {}
+
+        ret.delay_ = i.delay_;
+        return ret;
     }
 
     /**
@@ -206,30 +290,18 @@ public class ImageLoader {
      * @param transpose transpose image
      * @return transport array
      */
-    public byte[] ProcessImage(BufferedImage i, int width, int height,
-                               String type, boolean keepAspectRatio, boolean transpose) {
-        // Copy
-        BufferedImage temp = i;
-        byte[] ret = null;
-
+    public ImageBuffer ProcessImage(ImageFrame i, int width, int height,
+                                    String type, boolean keepAspectRatio, boolean transpose) {
         // Resize image
-        if (i.getHeight() != height || i.getWidth() != width) {
-            temp = Resize(i, width, height, keepAspectRatio);
+        if (i.image_.getHeight() != height || i.image_.getWidth() != width) {
+            i.image_ = Resize(i.image_, width, height, keepAspectRatio);
         }
 
         // Transpose image
         if (transpose) {
-            temp = Transpose(temp);
+            i.image_ = Transpose(i.image_);
         }
 
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        try {
-            ImageIO.write(temp, type, stream );
-            stream.flush();
-            ret = stream.toByteArray();
-            stream.close();
-        } catch (IOException ignored) {}
-
-        return ret;
+        return ToImageBuffer(i, type);
     }
 }

@@ -1,5 +1,7 @@
 package fpga;
 
+import types.ImageBuffer;
+import types.ImageFrame;
 import util.Color;
 import util.ImageLoader;
 import util.Thread;
@@ -15,7 +17,7 @@ public class DisplayService extends Thread {
     /**
      * Frame list
      */
-    private List<BufferedImage> frames_ = null;
+    private List<ImageFrame> frames_ = null;
 
     /**
      * Duration
@@ -102,7 +104,7 @@ public class DisplayService extends Thread {
      * @param process if pictures should be processed
      * @param keepAspectRatio if picture should keep aspect ratio
      */
-    public void AddFrame(BufferedImage i, boolean process, boolean keepAspectRatio, boolean transpose) {
+    public void AddFrame(ImageFrame i, boolean process, boolean keepAspectRatio, boolean transpose) {
         // Process
         if (process) {
             frames_.add(loader_.ProcessImage(i, transmitter_.GetWidth(),
@@ -117,9 +119,9 @@ public class DisplayService extends Thread {
      * @param frames as buffer
      * @param keepAspectRatio if picture should keep aspect ratio
      */
-    public void SetFramesFromBuffer(List<byte[]> frames, boolean process, boolean keepAspectRatio, boolean transpose) {
-        for (byte[] buffer : frames) {
-            final BufferedImage t = loader_.FromBuffer(buffer);
+    public void SetFramesFromBuffer(List<ImageBuffer> frames, boolean process, boolean keepAspectRatio, boolean transpose) {
+        for (ImageBuffer buffer : frames) {
+            final ImageFrame t = loader_.FromBufferToFrame(buffer);
 
             // If image is invalid | TODO: Log
             if (t == null)
@@ -135,8 +137,8 @@ public class DisplayService extends Thread {
      * @param frames as ImageBuffer
      * @param keepAspectRatio if picture should keep aspect ratio
      */
-    public void SetFrames(List<BufferedImage> frames, boolean process, boolean keepAspectRatio, boolean transpose) {
-        for (BufferedImage t : frames) {
+    public void SetFrames(List<ImageFrame> frames, boolean process, boolean keepAspectRatio, boolean transpose) {
+        for (ImageFrame t : frames) {
             // If image is invalid | TODO: Log
             if (t == null)
                 continue;
@@ -166,30 +168,31 @@ public class DisplayService extends Thread {
         try {
             // If we are done
             while (!LocalTime.now().isAfter(localTime_) || duration_ == 0) {
+                // If we have to stop
+                if (stop_.get())
+                    break;
+
                 // As long we just have one frame we scan skip
-                if (transmitted_ && frames_.size() == 1) {
-                    try {
-                        // If we show frames
-                        if (frames_.size() >= 0) {
-                            for (BufferedImage i : frames_) {
-                                transmitter_.TransmitImage(i, brightness_);
-                                java.lang.Thread.sleep(pause_);
-                            }
-                        } else if (color_ != null) {
-                            transmitter_.TransmitColor(color_, brightness_);
-                            java.lang.Thread.sleep(pause_);
+                if (transmitted_ && (frames_.size() == 1 || color_ != null))
+                    continue;
+
+                try {
+                    // If we show frames
+                    if (frames_.size() >= 0) {
+                        for (ImageFrame i : frames_) {
+                            transmitter_.TransmitImage(i.image_, brightness_);
+                            java.lang.Thread.sleep(i.delay_ > 0 ? i.delay_ : pause_);
                         }
-                    } catch (IOException e) {
-                        // TODO: Log
+                    } else if (color_ != null) {
+                        transmitter_.TransmitColor(color_, brightness_);
+                        java.lang.Thread.sleep(pause_);
                     }
+                } catch (IOException e) {
+                    // TODO: Log
                 }
 
                 // Ok we're fine
                 transmitted_ = true;
-
-                // If we have to stop
-                if (stop_.get())
-                    break;
             }
 
             Clear();
