@@ -185,6 +185,12 @@ public class ActionPack {
     }
 
     private boolean WriteArchive() {
+        // Create directories
+        File f = new File(packPath).getParentFile();
+        if (!f.exists() && !f.mkdirs())
+            System.out.printf("[Error] Failed to create directories: %s\n", f.getAbsolutePath());
+
+        // Writer
         ArchiveWriter writer = null;
         try {
             writer = new ArchiveWriter(packPath);
