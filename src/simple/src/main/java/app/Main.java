@@ -64,15 +64,21 @@ public class Main extends SimpleApp {
         }
 
         // Find matrix module
-        byte ret = t.FindModule(options_.device_);
+        byte ret = t.FindModules(options_.device_);
         if (ret != Types.READY) {
             System.out.printf("[Error] Failed to initialize matrix error code: %d. \n", ret);
-            //return;
+            return;
         }
 
         // Display service
         DisplayService service = new DisplayService(t, options_.duration_, options_.brightness_);
         service.SetPause(options_.pause_);
+
+        // Clear matrix and exit
+        if(options_.clean_) {
+            service.Clear();
+            return;
+        }
 
         // Image loader
         ImageLoader loader = new ImageLoader();
@@ -94,7 +100,7 @@ public class Main extends SimpleApp {
         }
 
         // Mime type not found
-        if (mimeType != null &&mimeType.equals("image/gif")){
+        if (mimeType != null && mimeType.equals("image/gif")){
             try {
                 service.SetFrames(loader.GetFrames(f), true, options_.aspectRatio_, options_.transpose_);
             } catch (IOException e) {
@@ -121,7 +127,7 @@ public class Main extends SimpleApp {
         try {
             service.Join();
         } catch (InterruptedException e) {
-            // Silent exit
+            service.Clear();
         }
     }
 }

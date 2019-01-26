@@ -53,6 +53,11 @@ public class DisplayService extends Thread {
     private int pause_ = 100;
 
     /**
+     * Transmitted
+     */
+    private boolean transmitted_;
+
+    /**
      * Constructor
      * @param duration duration
      * @param brightness float
@@ -63,6 +68,7 @@ public class DisplayService extends Thread {
         duration_ = duration;
         brightness_ = brightness;
         loader_ = new ImageLoader();
+        transmitted_ = false;
     }
 
     /**
@@ -140,6 +146,16 @@ public class DisplayService extends Thread {
         }
     }
 
+    public void Clear() {
+        // Clear matrix
+        Color c = new Color(0, 0, 0);
+        try {
+            transmitter_.TransmitColor(c, 0.0f);
+        } catch (IOException e) {
+            // TODO: Log (failed to clear)
+        }
+    }
+
     /**
      * Run
      */
@@ -149,36 +165,36 @@ public class DisplayService extends Thread {
 
         try {
             // If we are done
-            while (LocalTime.now().isAfter(localTime_) || duration_ == 0) {
-                try {
-                    // If we show frames
-                    if (frames_.size() >= 0) {
-                        for (BufferedImage i : frames_) {
-                            transmitter_.TransmitImage(i, brightness_);
+            while (!LocalTime.now().isAfter(localTime_) || duration_ == 0) {
+                // As long we just have one frame we scan skip
+                if (transmitted_ && frames_.size() == 1) {
+                    try {
+                        // If we show frames
+                        if (frames_.size() >= 0) {
+                            for (BufferedImage i : frames_) {
+                                transmitter_.TransmitImage(i, brightness_);
+                                java.lang.Thread.sleep(pause_);
+                            }
+                        } else if (color_ != null) {
+                            transmitter_.TransmitColor(color_, brightness_);
                             java.lang.Thread.sleep(pause_);
                         }
-                    } else if (color_ != null) {
-                        transmitter_.TransmitColor(color_, brightness_);
-                        java.lang.Thread.sleep(pause_);
+                    } catch (IOException e) {
+                        // TODO: Log
                     }
-                } catch (IOException e) {
-                    // TODO: Log
                 }
+
+                // Ok we're fine
+                transmitted_ = true;
 
                 // If we have to stop
                 if (stop_.get())
                     break;
             }
 
-            // Clear matrix
-            Color c = new Color(0, 0, 0);
-            try {
-                transmitter_.TransmitColor(c, 0.0f);
-            } catch (IOException e) {
-                // TODO: Log (failed to clear)
-            }
+            Clear();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            Clear();
         }
     }
 }

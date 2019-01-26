@@ -29,5 +29,5 @@ public class Options {
     public int height_ = 16;
 
     @CommandLine.Option(names = { "-d", "--device" }, description = "Select matrix device endpoint.")
-    public String device_ = "cu.usbserial-16";
+    public String device_ = "Arrow USB Blaster";
 }

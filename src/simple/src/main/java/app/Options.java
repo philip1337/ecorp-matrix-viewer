@@ -10,7 +10,7 @@ public class Options {
     @CommandLine.Option(names = { "-dlist", "--device-list" }, description = "Show device list.")
     public boolean showDevices_ = false;
 
-    @CommandLine.Option(names = { "-ratio", "--ratio" }, description = "Keep aspect ratio")
+    @CommandLine.Option(names = { "-r", "--ratio" }, description = "Keep aspect ratio")
     public boolean aspectRatio_ = false;
 
     @CommandLine.Option(names = { "-c", "--clean" }, description = "Clean matrix, vanish.")
@@ -35,7 +35,7 @@ public class Options {
     public String picture_ = "test.jpg";
 
     @CommandLine.Option(names = { "-d", "--device" }, description = "Select matrix device endpoint.")
-    public String device_ = "cu.usbserial-16";
+    public String device_ = "Arrow USB Blaster";
 
     @CommandLine.Option(names = { "-b", "--brightness" }, description = "Brightness value (0-255, default: 50).")
     public float brightness_ = 0.06f;

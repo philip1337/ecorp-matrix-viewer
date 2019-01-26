@@ -102,8 +102,10 @@ public class Main extends SimpleApp {
     @Override
     public void OnApp() {
         // Stop cause module is not connected...
-        if (transmitter_.FindModule(options_.device_) != Types.READY) {
-            //return;
+        int code = transmitter_.FindModules(options_.device_);
+        if (code != Types.READY) {
+            System.out.printf("[Error] Failed to initialize matrix, code: %d\n", code);
+            return;
         }
 
         // Register threaded services

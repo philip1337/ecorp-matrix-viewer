@@ -19,6 +19,7 @@ To build this application you need the [gradle build system](https://gradle.org/
 * [jSerialCom](https://github.com/Fazecast/jSerialComm)
 * [jTwig](https://github.com/jtwig/jtwig-core)
 * [netty-io](https://github.com/netty/netty)
+* [imgscalr](https://github.com/rkalla/imgscalr)
 
 ## Members
 * Patrick (Project Manager)

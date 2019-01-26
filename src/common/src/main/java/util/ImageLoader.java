@@ -1,5 +1,7 @@
 package util;
 
+import org.imgscalr.Scalr;
+
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
@@ -124,17 +126,16 @@ public class ImageLoader {
      * @return scaled image
      */
     public static BufferedImage Resize(BufferedImage image, int scaledWidth, int scaledHeight, boolean preserveRatio) {
-        // Keep aspect ratio
+        // Use scalr image library if we have to keep aspect ratio
         if (preserveRatio) {
-            double imageHeight = image.getHeight();
-            double imageWidth = image.getWidth();
-
-            if (imageHeight/scaledHeight > imageWidth/scaledWidth) {
-                scaledWidth = (int) (scaledHeight * imageWidth / imageHeight);
-            } else {
-                scaledHeight = (int) (scaledWidth * imageHeight / imageWidth);
+            if(image.getHeight() >= image.getWidth()){
+                return Scalr.resize(image, Scalr.Method.AUTOMATIC, Scalr.Mode.FIT_TO_HEIGHT, scaledHeight);
+            } else{
+                return Scalr.resize(image, Scalr.Method.AUTOMATIC, Scalr.Mode.FIT_TO_WIDTH, scaledWidth);
             }
         }
+
+        // Otherwise we use the standard resize (with scale smooth)
 
         // creates output image
         BufferedImage outputBufImage = new BufferedImage(scaledWidth, scaledHeight, image.getType());
@@ -143,7 +144,6 @@ public class ImageLoader {
         Graphics2D g2d = outputBufImage.createGraphics();
         g2d.drawImage(image, 0, 0, scaledWidth, scaledHeight, null);
         g2d.dispose();
-
         return outputBufImage;
     }
 
