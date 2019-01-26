@@ -183,7 +183,7 @@ public class DisplayService extends Thread {
 
                 try {
                     // If we show frames
-                    if (frames_.size() >= 0) {
+                    if (frames_.size() > 0) {
                         for (ImageFrame i : frames_) {
                             transmitter_.TransmitImage(i.image_, brightness_);
                             java.lang.Thread.sleep(i.delay_ > 0 ? i.delay_ : pause_);

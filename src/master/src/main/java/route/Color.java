@@ -88,13 +88,14 @@ public class Color extends MessageRoute {
                     }
                     break;
 
-                case "brightness":
-                    try {
-                        c.brightness_ = Float.parseFloat(a.getValue());
-                    } catch (IOException e) {
-                        c.brightness_ = 1.0f;
-                    }
-                    break;
+                //case "brightness":
+                //    try {
+                //        int value = Integer.min(100, Integer.parseInt(a.getValue()));
+                //        c.brightness_ = (float)value / 100;
+                //    } catch (IOException e) {
+                //        c.brightness_ = 1.0f;
+                //    }
+                //    break;
 
                 case "duration":
                     try {
@@ -105,6 +106,9 @@ public class Color extends MessageRoute {
                     break;
             }
         }
+
+        // No brightness (buggy)
+        c.brightness_ = 1.f;
 
         // Clients
         for(Client client : clients_) {
