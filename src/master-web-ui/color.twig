@@ -38,6 +38,14 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="brightnessInput">Brightness</label>
+                    <input name="brightness" type="range" class="form-control" id="brightnessInput"
+                           min="1" max="100" value="30" step="1"
+                           aria-describedby="brightnessHelp">
+                    <small id="brightnessHelp" class="form-text text-muted">Brightness from (1-100%)</small>
+                </div>
+
+                <div class="form-group">
                     <label for="durationInput">Duration</label>
                     <input name="duration" type="number" class="form-control" id="durationInput" value="0"
                            aria-describedby="durationInputHelp">
