@@ -72,8 +72,11 @@ public class ImageLoader {
      * @throws IOException if read fails
      */
     public ArrayList<ImageFrame> GetFrames(byte[] buffer) throws IOException{
-        ByteArrayInputStream stream = new ByteArrayInputStream(buffer);
-        return GetFrames(stream);
+        ArrayList<ImageFrame> frames = new ArrayList<>();
+        ImageReader reader = ImageIO.getImageReadersByFormatName("gif").next();
+        reader.setInput(ImageIO.createImageInputStream(new ByteArrayInputStream(buffer)));
+        Read(frames, reader);
+        return frames;
     }
 
     /**
@@ -121,11 +124,14 @@ public class ImageLoader {
         // Loop over frames
         for (int index = 0; index < count; index++) {
             ImageFrame frame = new ImageFrame();
-            frame.image_ =  reader.read(index);
-
+            try {
+                frame.image_ = reader.read(index);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                // TODO: Log
+                continue;
+            }
             // Try to get delay
             frame.delay_ = GetDelay((IIOMetadataNode)reader.getImageMetadata(index).getAsTree(metaFormatName));
-            System.out.printf("delay: %d\n", frame.delay_);
             if (frame.image_ != null)
                 frames.add(frame);
         }
@@ -138,13 +144,23 @@ public class ImageLoader {
      * @throws IOException if read fails
      */
     public ArrayList<ImageFrame> GetFrames(File gif) throws IOException{
+        return GetFrames(ImageIO.createImageInputStream(gif));
+    }
+
+    /**
+     * Get frames from stream
+     * @param stream image input stream
+     * @return list with imageframes
+     * @throws IOException if stream is invalid
+     */
+    public ArrayList<ImageFrame> GetFrames(ImageInputStream stream) throws IOException{
         ArrayList<ImageFrame> frames = new ArrayList<>();
         ImageReader reader = ImageIO.getImageReadersByFormatName("gif").next();
-        ImageInputStream stream = ImageIO.createImageInputStream(gif);
         reader.setInput(stream);
         Read(frames, reader);
         return frames;
     }
+
 
     /**
      * Input stream
