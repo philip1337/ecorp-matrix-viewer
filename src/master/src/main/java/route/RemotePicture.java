@@ -108,14 +108,19 @@ public class RemotePicture extends MessageRoute {
 
                 case "brightness":
                     try {
-                        m.brightness_ = Float.parseFloat(a.getValue());
-                    } catch (IOException e) {}
+                        int value = Integer.min(100, Integer.parseInt(a.getValue()));
+                        m.brightness_ = value / 100;
+                    } catch (IOException e) {
+                        m.brightness_ = 1.0f;
+                    }
                     break;
 
                 case "duration":
                     try {
                         m.duration_ = Integer.parseInt(a.getValue());
-                    } catch (IOException e) {}
+                    } catch (IOException e) {
+                        m.duration_ = 0;
+                    }
                     break;
             }
         }

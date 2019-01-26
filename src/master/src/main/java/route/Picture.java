@@ -59,7 +59,7 @@ public class Picture extends MessageRoute {
         }
 
         // Invalid file upload
-        if (session.GetFiles().size() != 1) {
+        if (session.GetFiles().size() <= 0) {
             msg.message_ = "Error: Failed to read image, please try again later..";
             msg.type_ = "danger";
             return msg;
@@ -97,7 +97,8 @@ public class Picture extends MessageRoute {
 
                 case "brightness":
                     try {
-                        m.brightness_ = Float.parseFloat(a.getValue());
+                        int value = Integer.min(100, Integer.parseInt(a.getValue()));
+                        m.brightness_ = value / 100;
                     } catch (IOException e) {
                         m.brightness_ = 1.0f;
                     }
@@ -135,10 +136,11 @@ public class Picture extends MessageRoute {
             String cachePath = Config.CACHE_FOLDER + df.format(timestamp) + " - " + file.getFilename();
 
             // Cache path
-            File cacheFile = new File(cachePath).getParentFile();
+            File cacheFile = new File(cachePath);
+            File directory = cacheFile.getParentFile();
 
             // Create directories
-            if (!cacheFile.exists() && cacheFile.mkdirs()) {
+            if (!directory.exists() && !directory.mkdirs()) {
                 msg.message_ = "Error: Cache directory is not writeable.";
                 msg.type_ = "danger";
                 return msg;
@@ -164,6 +166,7 @@ public class Picture extends MessageRoute {
         if (!m.type_.contains("image/")) {
             msg.message_ = "Error: File is not an image.";
             msg.type_ = "danger";
+            return msg;
         }
 
         // Differ between gif and normal image
@@ -171,6 +174,7 @@ public class Picture extends MessageRoute {
             try {
                 frames = loader.GetFrames(imageBuffer);
             } catch (IOException e) {
+                e.printStackTrace();
                 msg.message_ = "Error: File is not an image.";
                 msg.type_ = "danger";
                 return msg;

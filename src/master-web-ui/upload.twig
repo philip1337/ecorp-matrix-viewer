@@ -38,10 +38,10 @@
 
                 <div class="form-group">
                     <label for="brightnessInput">Brightness</label>
-                    <input name="brightness" type="number" class="form-control" id="brightnessInput"
-                           min="0" value="0.3" step=".01"
+                    <input name="brightness" type="range" class="form-control" id="brightnessInput"
+                           min="1" max="100" value="30" step="1"
                            aria-describedby="brightnessHelp">
-                    <small id="brightnessHelp" class="form-text text-muted">Brightness from (0.1 - 1.0)</small>
+                    <small id="brightnessHelp" class="form-text text-muted">Brightness from (1-100%)</small>
                 </div>
 
                 <div class="form-group">
