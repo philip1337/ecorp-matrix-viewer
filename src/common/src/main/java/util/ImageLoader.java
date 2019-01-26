@@ -97,7 +97,7 @@ public class ImageLoader {
     private int GetDelay(IIOMetadataNode root) {
         // If root is invalid (Default 10)
         if (root == null)
-            return 10;
+            return 10 * 10;
 
         // Find GraphicControlExtension node
         int nNodes = root.getLength();
@@ -112,7 +112,7 @@ public class ImageLoader {
             }
         }
 
-        return Integer.max(d, 10);
+        return Integer.max(d, 10 * 10);
     }
 
     /**
@@ -147,6 +147,7 @@ public class ImageLoader {
      * @param frames frame array
      * @param reader image reader (buffer)
      * @throws IOException if failed to read from buffer
+     * https://stackoverflow.com/questions/8933893/convert-each-animated-gif-frame-to-a-separate-bufferedimage
      */
     private void Read(ArrayList<ImageFrame> frames, ImageReader reader) throws IOException {
         int width = -1;
@@ -171,6 +172,9 @@ public class ImageLoader {
         BufferedImage master = null;
         Graphics2D masterGraphics = null;
 
+        IIOMetadata imageMetaData = reader.getImageMetadata(0);
+        String metaFormatName = imageMetaData.getNativeMetadataFormatName();
+
         for (int frameIndex = 0; ; frameIndex++) {
             BufferedImage image;
             try {
@@ -186,7 +190,7 @@ public class ImageLoader {
 
             IIOMetadataNode root = (IIOMetadataNode) reader.getImageMetadata(frameIndex).getAsTree("javax_imageio_gif_image_1.0");
             IIOMetadataNode gce = (IIOMetadataNode) root.getElementsByTagName("GraphicControlExtension").item(0);
-            int delay = Integer.valueOf(gce.getAttribute("delayTime"));
+            int delay = GetDelay((IIOMetadataNode)reader.getImageMetadata(frameIndex).getAsTree(metaFormatName));
             String disposal = gce.getAttribute("disposalMethod");
 
             int x = 0;
