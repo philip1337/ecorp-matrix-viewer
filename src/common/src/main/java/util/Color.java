@@ -49,8 +49,8 @@ public class Color extends java.awt.Color {
      */
     public byte[] RawBytes() {
         return String.format("%02X%02X%02X",
-                Math.max((int)(getRed()), 0),
                 Math.max((int)(getGreen()), 0),
+                Math.max((int)(getRed()), 0),
                 Math.max((int)(getBlue()), 0)).getBytes();
     }
 
@@ -61,8 +61,8 @@ public class Color extends java.awt.Color {
      */
     public String ToHex() {
         return String.format("%02X%02X%02X",
-                Math.max((int)(getRed() * brightness_), 0),
                 Math.max((int)(getGreen() * brightness_), 0),
+                Math.max((int)(getRed() * brightness_), 0),
                 Math.max((int)(getBlue() * brightness_), 0));
     }
 
