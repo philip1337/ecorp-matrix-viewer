@@ -1,4 +1,4 @@
-# ecorp-matrize-viewer
+# ecorp-matrix-viewer
 Matrix Viewer - Displays "something" on a RGB-LED-Matrix.
 
 ## Source Tree
