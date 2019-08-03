@@ -8,7 +8,6 @@ import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.concurrent.Semaphore;
-import java.util.regex.Pattern;
 
 public class Provider {
     /**
@@ -47,16 +46,11 @@ public class Provider {
     }
 
     /**
-     * Sanitize uri pattern
-     */
-    private static final Pattern INSECURE_URI = Pattern.compile(".*[<>&\"].*");
-
-    /**
      * Path sanitize (sandbox directory)
      * @param uri previous path
      * @return new path (absolute)
      */
-    private String Sanitize(String uri) {
+    public String Sanitize(String uri) {
         // Decode the path.
         try {
             uri = URLDecoder.decode(uri, "UTF-8");
@@ -68,20 +62,35 @@ public class Provider {
             return null;
         }
 
+        // Remove root slash
+        uri = uri.substring(1);
         // Convert file separators.
         uri = uri.replace('/', File.separatorChar);
 
-        // Simplistic dumb security check.
-        // You will have to do something serious in the production environment.
-        if (uri.contains(File.separator + '.') ||
-                uri.contains('.' + File.separator) ||
-                uri.charAt(0) == '.' || uri.charAt(uri.length() - 1) == '.' ||
-                INSECURE_URI.matcher(uri).matches()) {
+        // Check path traversal
+        File file = new File(uri);
+        if (file.isAbsolute()) {
+            // Absolute paths are not allowed
             return null;
         }
+        try
+        {
+            String canonical = file.getCanonicalPath();
+            String absolute = file.getAbsolutePath();
 
-        // Convert to absolute path.
-        return diskPath_ + File.separator + uri;
+            if (!canonical.equals(absolute))
+            {
+                // Prevent traversing up
+                return null;
+            }
+
+            // Convert to absolute path.
+            return diskPath_ + File.separator + uri;
+        }
+        catch (IOException e)
+        {
+            return null;
+        }
     }
 
 
@@ -112,7 +121,7 @@ public class Provider {
      *
      * @param path to the file in the vfs
      * @return File
-     * @throws IOException File not found
+     * @throws IOException File not found or path traversal
      */
     public byte[] Get(String path) throws IOException {
         // Try to get file from disk if we support disk paths
@@ -123,6 +132,8 @@ public class Provider {
                 File f = new File(sanitized);
                 if (f.exists())
                     return Files.readAllBytes(f.toPath());
+            } else {
+                throw new IOException("Attempted path traversal: " + path);
             }
         }
 
